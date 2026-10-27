@@ -17,3 +17,9 @@ export function normalizeNames(document){
  }
  return copy;
 }
+
+export function exerciseSummary(records,person,month){
+ const items=records.filter(x=>x.kind==='運動'&&x.person===person&&x.date.startsWith(month));
+ const sum=key=>items.reduce((n,x)=>n+(Number(x[key])||0),0);
+ return {items,days:new Set(items.map(x=>x.date)).size,sessions:items.length,minutes:sum('minutes'),activeCalories:sum('activeCalories'),calorieEntries:items.filter(x=>x.activeCalories!==''&&x.activeCalories!=null).length};
+}
