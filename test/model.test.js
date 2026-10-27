@@ -23,11 +23,19 @@ test('固定家務：月末與閏年、完成後保留原星期、逾期不逐�
  assert.equal(nextChoreDate(weekly,'2026-10-07'),'2026-10-12');
  assert.equal(nextChoreDate(weekly,'2026-10-27'),'2026-11-02');
  assert.equal(nextChoreDate(weekly,'2026-10-04'),'2026-10-12');
- assert.equal(choreFrequency(weekly),'每週一');
+ assert.equal(choreFrequency(weekly),'每週（週一）');
  assert.equal(nextChoreDate({next:'2026-10-01',interval:'7'},'2026-10-08'),'2026-10-15');
  assert.equal(nextChoreDate({cadence:'每日',next:'2026-10-01'},'2026-10-27'),'2026-10-28');
  assert.equal(choreStatus({next:'2026-10-26'},'2026-10-27').group,'overdue');
  assert.equal(choreStatus({next:'2026-10-27'},'2026-10-27').group,'today');
  assert.equal(choreStatus({next:'2026-10-30',remindDays:3},'2026-10-27').group,'soon');
  assert.equal(choreStatus({next:'2026-10-30',remindDays:1},'2026-10-27').group,'later');
+});
+
+test('自訂家務間隔支援天、週、月並保留月底基準',()=>{
+ assert.equal(nextChoreDate({repeatEvery:'2',repeatUnit:'週',next:'2026-10-05'},'2026-10-07'),'2026-10-19');
+ assert.equal(nextChoreDate({repeatEvery:'3',repeatUnit:'個月',next:'2026-01-31'},'2026-01-31'),'2026-04-30');
+ assert.equal(nextChoreDate({repeatEvery:'3',repeatUnit:'個月',next:'2026-04-30',anchor:'2026-01-31'},'2026-04-30'),'2026-07-31');
+ assert.equal(nextChoreDate({repeatEvery:'10',repeatUnit:'天',next:'2026-10-01'},'2026-10-27'),'2026-10-31');
+ assert.equal(choreFrequency({repeatEvery:'3',repeatUnit:'個月',next:'2026-10-15'}),'每 3 個月 15 日');
 });

@@ -31,13 +31,20 @@ export function choreStatus(chore,now=today()){
  const remind=Number(chore.remindDays??1);
  return {days,group:days<0?'overdue':days===0?'today':days<=remind?'soon':'later',label:days<0?'逾期 '+(-days)+' 天':days===0?'今天處理':days<=remind?days+' 天後到期':chore.next};
 }
+export function choreRule(chore){
+ if(chore.repeatUnit&&chore.repeatEvery)return {unit:chore.repeatUnit,every:Number(chore.repeatEvery)};
+ if(chore.cadence==='每日')return {unit:'天',every:1};
+ if(chore.cadence==='每週')return {unit:'週',every:1};
+ if(chore.cadence==='每月')return {unit:'個月',every:1};
+ return {unit:'天',every:Number(chore.interval||1)};
+}
 export function nextChoreDate(chore,completed=today()){
  let next=chore.next;
  const anchor=utcDay(chore.anchor||chore.next).getUTCDate();
- const interval=chore.cadence==='每日'?1:chore.cadence==='每週'?7:Number(chore.interval||1);
+ const {unit,every}=choreRule(chore);const interval=unit==='週'?every*7:every;
  if(!Number.isFinite(utcDay(next).getTime())||!Number.isInteger(interval)||interval<1)throw Error('家務排程日期或週期不正確');
- if(chore.cadence==='每月'){
-  do{const d=utcDay(next);const first=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,1));const last=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();first.setUTCDate(Math.min(anchor,last));next=isoDay(first);}while(next<=completed);
+ if(unit==='個月'){
+  do{const d=utcDay(next);const first=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+every,1));const last=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0)).getUTCDate();first.setUTCDate(Math.min(anchor,last));next=isoDay(first);}while(next<=completed);
  }else{
   const d=utcDay(next),days=Math.max(1,Math.floor((utcDay(completed)-d)/86400000/interval)+1)*interval;
   d.setUTCDate(d.getUTCDate()+days);next=isoDay(d);
@@ -45,8 +52,8 @@ export function nextChoreDate(chore,completed=today()){
  return next;
 }
 export function choreFrequency(chore){
- if(chore.cadence==='每日')return '每天';
- if(chore.cadence==='每週')return '每週'+['日','一','二','三','四','五','六'][utcDay(chore.anchor||chore.next).getUTCDay()];
- if(chore.cadence==='每月')return '每月 '+utcDay(chore.anchor||chore.next).getUTCDate()+' 日';
- return '每 '+chore.interval+' 天';
+ const {unit,every}=choreRule(chore);
+ if(unit==='天')return every===1?'每天':'每 '+every+' 天';
+ if(unit==='週')return (every===1?'每週':'每 '+every+' 週')+'（週'+['日','一','二','三','四','五','六'][utcDay(chore.anchor||chore.next).getUTCDay()]+'）';
+ return (every===1?'每月':'每 '+every+' 個月')+' '+utcDay(chore.anchor||chore.next).getUTCDate()+' 日';
 }
