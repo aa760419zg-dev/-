@@ -36,6 +36,15 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  q('#health-month').value='2026-10';q('#health-month').dispatchEvent(new w.Event('change',{bubbles:true}));
  q('#health-person').value='糖糖';q('#health-person').dispatchEvent(new w.Event('change',{bubbles:true}));assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
  w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
+
+ w.location.hash='chores';w.dispatchEvent(new w.Event('hashchange'));await tick();
+ await click('[data-add="chores"]');q('[name="title"]').value='更換濾心';q('[name="cadence"]').value='每月';q('[name="cadence"]').dispatchEvent(new w.Event('change',{bubbles:true}));q('[name="next"]').value=model.today();q('[name="pinned"]').checked=true;
+ q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.chores.length,1);assert.equal(stored.chores[0].date,'');assert.equal(stored.chores[0].pinned,true);const choreId=stored.chores[0].id;
+ assert.match(q('#view').textContent,/今天處理/);assert.match(q('#view').textContent,/置頂 · 常看家務/);
+ await click('[data-edit-chore]');q('[name="title"]').value='廚房濾心';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.chores.length,1);assert.equal(stored.chores[0].id,choreId);assert.equal(stored.chores[0].title,'廚房濾心');
+ const expectedNext=model.nextChoreDate(stored.chores[0]);await click('[data-complete]');assert.equal(stored.chores[0].next,expectedNext);assert.equal(stored.chores[0].date,model.today());assert.equal(stored.chores[0].history.length,1);
+ await click('[data-pin-chore]');assert.equal(stored.chores[0].pinned,false);await click('#refresh-cloud');assert.match(q('#view').textContent,/廚房濾心/);
+ w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
  fail=true;await click('[data-add="money"]');q('[name="amount"]').value='100';q('[name="title"]').value='不應儲存';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(q('#modal').open,true);
  await click('.close');await click('#logout');assert.ok(q('#auth-form'));assert.doesNotMatch(q('#view').textContent,/買菜/);
  }finally{w.close();}
