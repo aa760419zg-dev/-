@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {JSDOM} from 'jsdom';
 import * as model from '../public/model.js';
+import {createPetManager} from '../public/pet-manager.js';
 const tick=()=>new Promise(r=>setTimeout(r,10));
 test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async()=>{
  const dom=new JSDOM(await readFile(new URL('../public/index.html',import.meta.url),'utf8'),{url:'http://localhost/',runScripts:'outside-only'}),w=dom.window;
@@ -10,7 +11,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  let stored=model.empty(),rev=0,fail=false,signedOut;
  w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- Object.assign(w,model);
+ Object.assign(w,model);w.createPetManager=options=>createPetManager({...options,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:null}}),signInWithPassword:async()=>({data:{session:{user:{email:'one@example.com'}}}}),signOut:async()=>{signedOut?.('SIGNED_OUT',null);return{};},onAuthStateChange:fn=>{signedOut=fn;}}};
  w.rpc=async(name,args)=>{if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true};if(name==='family_save'){if(fail)throw Error('資料已更新');stored=structuredClone(args.new_document);return ++rev;}};
  const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');w.eval(code);await tick();

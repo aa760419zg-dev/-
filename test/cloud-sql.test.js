@@ -28,6 +28,23 @@ test('家庭 SQL：驗證成員隔離、邀請、容量、版本衝突及匿名�
  await as(1,'one@example.com');assert.equal((await read()).document.opening,5000);
  await assert.rejects(db.query('select public.family_save($1,$2)',[0,first.document]),/資料已更新/);
  await db.query('select public.family_invite($1)',['stranger@example.com']);await as(3,'stranger@example.com');await assert.rejects(db.query('select public.family_join()'),/限兩位/);
+
+ // 模擬 Supabase Storage 資料表，驗證照片政策能隔離家庭。
+ await db.exec(`reset role; create schema storage;
+ create table storage.buckets(id text primary key,name text,public boolean,file_size_limit bigint,allowed_mime_types text[]);
+ create table storage.objects(id uuid default gen_random_uuid(),bucket_id text,name text);
+ alter table storage.objects enable row level security;
+ create function storage.foldername(text) returns text[] language sql immutable as $$select string_to_array($1,'/')$$;
+ grant usage on schema storage to authenticated,anon;
+ grant select,insert,delete on storage.objects to authenticated,anon;`);
+ const photoSql=await readFile(new URL('../supabase/pet-storage.sql',import.meta.url),'utf8');await db.exec(photoSql);await db.exec(photoSql);
+ await as(1,'one@example.com');await db.query('insert into storage.objects(bucket_id,name) values($1,$2)',['family-pet-photos',first.id+'/photo.jpg']);
+ await as(2,'two@example.com');assert.equal((await db.query('select * from storage.objects')).rows.length,1);
+ await as(3,'stranger@example.com');assert.equal((await db.query('select * from storage.objects')).rows.length,0);
+ await assert.rejects(db.query('insert into storage.objects(bucket_id,name) values($1,$2)',['family-pet-photos',first.id+'/intruder.jpg']),/row-level security/);
+ // 同時餵藥存檔：第二個舊版文件無法覆寫第一個已完成的紀錄。
+ await as(1,'one@example.com');const current=await read();const dose={...current.document,petDoses:[{id:'plan:2026-10-28:1',date:'2026-10-28',by:'阿嘎'}]};await db.query('select public.family_save($1,$2)',[current.revision,dose]);
+ await as(2,'two@example.com');await assert.rejects(db.query('select public.family_save($1,$2)',[current.revision,{...dose,petDoses:[{id:'plan:2026-10-28:1',date:'2026-10-28',by:'糖糖'}]}]),/資料已更新/);assert.equal((await read()).document.petDoses[0].by,'阿嘎');
  await db.exec('reset role;set role anon;');await assert.rejects(db.query('select public.family_read()'),/permission denied/);
  }finally{await db.close();}
 });
