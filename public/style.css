@@ -8,3 +8,4 @@
 
 .chore-row{align-items:flex-start}.chore-row .tag{display:inline-block;margin-top:9px}.chore-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:5px;max-width:150px}.status-overdue{background:#fae9e0;color:#a86547}.status-today{background:#f6efd6;color:#9a7d33}.status-soon{background:#eef2df;color:#788745}.pin-field{display:flex!important;align-items:center;gap:9px}.pin-field input{width:18px;min-height:18px;margin:0}#chore-custom[hidden]{display:none}@media(max-width:760px){.chore-row{flex-wrap:wrap}.chore-row .row-main{min-width:180px}.chore-actions{max-width:none;width:100%;justify-content:flex-end}.chore-actions .subtle{margin-right:auto}}
 .repeat-fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.category-choices{display:flex;flex-wrap:wrap;gap:6px}.category-choices .subtle{font-size:11px;padding:6px 10px;max-width:100%;overflow-wrap:anywhere}.chart-row label{overflow-wrap:anywhere;flex-shrink:0}

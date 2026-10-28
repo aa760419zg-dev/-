@@ -16,7 +16,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');w.eval(code);await tick();
  const q=s=>w.document.querySelector(s), click=async s=>{q(s).click();await tick();};
  assert.ok(q('#auth-form'));q('[name="email"]').value='one@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();assert.ok(q('[data-add="money"]'));
- await click('[data-add="money"]');q('[name="amount"]').value='200';q('[name="title"]').value='買菜';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.match(q('#view').textContent,/買菜/);
+ await click('[data-add="money"]');q('[name="amount"]').value='200';q('[name="title"]').value='買菜';q('[name="category"]').value='  生鮮蔬果  ';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(stored.money[0].category,'生鮮蔬果');assert.match(q('#view').textContent,/買菜/);await click('[data-add="money"]');assert.ok(q('[data-category="生鮮蔬果"]'));await click('[data-category="生鮮蔬果"]');assert.equal(q('[name="category"]').value,'生鮮蔬果');await click('.close');
 
  // 首頁運動入口只開啟表單，不自動寫入固定分鐘數。
  await click('[data-exercise="阿嘎"]');assert.equal(stored.health.length,0);
