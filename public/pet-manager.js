@@ -1,5 +1,5 @@
 import {medicationSlots,preventiveAlerts,recordDose,saveVisit} from './pets-model.js';
-export function createPetManager({getData,getHome,getSession,mutate,refresh,render,openLegacy,today,toast,client,document:doc=globalThis.document}){
+export function createPetManager({getData,getHome,getSession,mutate,refresh,render,openLegacy,today,toast,client,getMember=()=>getData().members?.find(m=>m.userId===getSession()?.user.id)||{name:"家庭成員"},document:doc=globalThis.document}){
  const win=doc.defaultView,esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const $=s=>doc.querySelector(s),sorted=a=>[...a].reverse().sort((a,b)=>b.date.localeCompare(a.date));
  let active='',tab='summary',edit=null,kind='',submitting=false;
@@ -64,9 +64,9 @@ export function createPetManager({getData,getHome,getSession,mutate,refresh,rend
  for(const file of files)uploads.push(await upload(file));
  v.id=edit?.id||win.crypto.randomUUID();v.date=v.date||today();if(kind!=='profile')v.petId=active;
  if(kind==='profile')v.photo=uploads[0]||edit?.photo||'';
- if(kind==='visit'){v.photos=[...oldPaths.filter(x=>!remove.includes(x)),...uploads];v.syncMoney=Boolean(v.syncMoney);v.person=getHome().owner?'阿嘎':'糖糖';}
+ if(kind==='visit'){v.photos=[...oldPaths.filter(x=>!remove.includes(x)),...uploads];v.syncMoney=Boolean(v.syncMoney);v.person=getMember().name;v.personUserId=getSession().user.id;}
  if(kind==='medication')v.stopped=edit?.stopped||false;
- if(getHome()?.id!==startHome||getSession()?.user.id!==startUser)throw Error('登入狀態已改變，請重新登入後再試');commitAttempted=true;const success=await mutate(()=>{const d=getData();if(kind==='visit')saveVisit(d,v);else{const list=d[collection(kind)],i=list.findIndex(x=>x.id===v.id);if(i<0)list.push(v);else list[i]=v;}if(kind==='profile'&&edit&&edit.name!==v.name)for(const record of d.pets)if(record.petId===v.id)record.pet=v.name;});
+ if(getHome()?.id!==startHome||getSession()?.user.id!==startUser)throw Error('登入狀態已改變，請重新登入後再試');commitAttempted=true;const success=await mutate(()=>{const d=getData();const latest=d[collection(kind)].find(x=>x.id===v.id);if(edit&&!latest)throw Error('紀錄已被刪除，請重新確認');if(kind==='medication'&&latest&&d.petDoses.some(x=>x.planId===latest.id)&&['drug','dose','mode','times','everyDays','start'].some(k=>String(latest[k]||'')!==String(v[k]||'')))throw Error('此計畫已有餵藥紀錄，變更劑量或頻率請停用後新增計畫');if(kind==='medication'&&latest)v.stopped=latest.stopped||false;if(kind==='visit'){v.person=getMember().name;v.personUserId=getSession().user.id;if(latest)v.photos=[...(latest.photos||[]).filter(p=>!remove.includes(p)),...uploads];saveVisit(d,v);}else{const list=d[collection(kind)],i=list.findIndex(x=>x.id===v.id);if(i<0)list.push(v);else list[i]=v;}if(kind==='profile'&&edit&&edit.name!==v.name)for(const record of d.pets)if(record.petId===v.id)record.pet=v.name;});
  if(!success)throw Error('未儲存成功。請保留內容，重新同步後再試；若顯示版本衝突，請關閉視窗並重開。');
  if(kind==='profile'){active=v.id;tab='summary';win.location.hash='pets/'+encodeURIComponent(active)+'/summary';}
  dialog.close();render();toast('寵物資料已存入家庭雲端');
@@ -84,7 +84,7 @@ export function createPetManager({getData,getHome,getSession,mutate,refresh,rend
   if(action==='copy-diet'){const p=animal(active);if(!p)return;const last=diet(p).find(x=>x.kind==='飲食');if(last)openLegacy('pets',{...last,id:undefined,date:today()});else toast('尚未有可複製的飲食紀錄');}
   if(action==='delete-weight'&&win.confirm('確定刪除此體重紀錄？'))await mutate(()=>{const d=getData();d.petWeights=d.petWeights.filter(x=>x.id!==id);});
   if(action==='stop-medication'&&win.confirm('停用後不再列入每日用藥提醒，過去餵藥紀錄仍保留。確定停用？'))await mutate(()=>{const plan=getData().petMedications.find(x=>x.id===id);if(plan)plan.stopped=true;});
-  if(action==='dose'){if(submitting)return;submitting=true;b.disabled=true;try{await refresh();const s=getSession();if(!s)throw Error('請先登入');const done=medicationSlots(getData(),today()).find(x=>x.id===id)?.done;if(done)throw Error('已由 '+done.by+' 標記餵藥，請勿重複餵食');const success=await mutate(()=>recordDose(getData(),id,today(),{id:s.user.id,name:getHome().owner?'阿嘎':'糖糖',at:new Date().toISOString()}));if(success)toast('已記錄餵藥者與時間');else{await refresh();render();toast('未確認儲存成功，請先查看最新餵藥紀錄，勿重複餵藥');}}catch(error){toast(error.message);render();}finally{submitting=false;b.disabled=false;}}
+  if(action==='dose'){if(submitting)return;submitting=true;b.disabled=true;try{await refresh();const s=getSession();if(!s)throw Error('請先登入');const done=medicationSlots(getData(),today()).find(x=>x.id===id)?.done;if(done)throw Error('已由 '+done.by+' 標記餵藥，請勿重複餵食');const at=new Date().toISOString();const success=await mutate(()=>recordDose(getData(),id,today(),{id:s.user.id,name:getMember().name,at}));if(success)toast('已記錄餵藥者與時間');else{await refresh();render();}}catch(error){toast(error.message);render();}finally{submitting=false;b.disabled=false;}}
  });
  async function mountPhotos(){for(const element of doc.querySelectorAll('[data-pet-photo],[data-pet-photo-link]')){const path=element.dataset.petPhoto||element.dataset.petPhotoLink;if(!path||!getHome()||!path.startsWith(getHome().id+'/'))continue;let cached=photoCache.get(path);if(!cached||cached.expires<Date.now()){const result=await bucket().createSignedUrl(path,600);if(result.error){element.alt='照片尚無法載入，請確認照片空間設定';continue;}cached={url:result.data.signedUrl,expires:Date.now()+540000};photoCache.set(path,cached);}if(element.tagName==='IMG')element.src=cached.url;else element.href=cached.url;}}
  return {page,home,mountPhotos,close:()=>{dialog.close();photoCache.clear();active='';}};

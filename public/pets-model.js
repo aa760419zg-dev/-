@@ -24,12 +24,12 @@ export function preventiveAlerts(data,date){
 export function recordDose(data,slotId,date,actor){
  const slot=medicationSlots(data,date).find(x=>x.id===slotId);
  if(!slot)throw Error('這次用藥不在今日排程內，請重新確認');
- if(slot.done)throw Error('這次已經有人標記餵藥，請勿重複餵食');
+ if(slot.done)throw Error('已由 '+slot.done.by+' 標記餵藥');
  data.petDoses.push({id:slot.id,petId:slot.plan.petId,planId:slot.plan.id,date,index:slot.index,drug:slot.plan.drug,dose:slot.plan.dose,by:actor.name,userId:actor.id,at:actor.at});
 }
 export function saveVisit(data,visit){
  const index=data.petVisits.findIndex(x=>x.id===visit.id);if(index<0)data.petVisits.push(visit);else data.petVisits[index]=visit;
  const linked='pet-visit-'+visit.id,existing=data.money.findIndex(x=>x.id===linked);
- if(visit.syncMoney&&Number(visit.cost)>0){const pet=data.petProfiles.find(x=>x.id===visit.petId);const money={id:linked,date:visit.date,kind:'支出',amount:visit.cost,title:(pet?.name||'寵物')+'就診 · '+visit.hospital,category:'寵物醫療',source:visit.source||'共同帳戶',person:visit.person,note:visit.reason,visitId:visit.id};if(existing<0)data.money.push(money);else data.money[existing]=money;}
+ if(visit.syncMoney&&Number(visit.cost)>0){const pet=data.petProfiles.find(x=>x.id===visit.petId);const money={id:linked,date:visit.date,kind:'支出',amount:visit.cost,title:(pet?.name||'寵物')+'就診 · '+visit.hospital,category:'寵物醫療',source:visit.source||'共同帳戶',person:visit.person,personUserId:visit.personUserId,note:visit.reason,visitId:visit.id};if(existing<0)data.money.push(money);else data.money[existing]=money;}
  else if(existing>=0)data.money.splice(existing,1);
 }

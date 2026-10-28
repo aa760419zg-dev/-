@@ -9,7 +9,7 @@ test('多寵物頁、體重精度、每日用藥、就診同步與照片上傳�
  const dom=new JSDOM('<main id="view"></main>',{url:'http://localhost/'}),w=dom.window,doc=w.document;
  try{
  w.confirm=()=>true;w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- let data=hydratePets(empty()),manager,saved=0,uploadCount=0;const home={id:'home1',owner:true};
+ let data=hydratePets(empty()),manager,saved=0,uploadCount=0;const home={id:'home1',owner:true};data.members=[{userId:'user1',name:'阿嘎',color:'#315c4c'}];
  const render=()=>{doc.querySelector('#view').innerHTML=manager.page();};
  manager=createPetManager({document:doc,getData:()=>data,getHome:()=>home,getSession:()=>({user:{id:'user1'}}),mutate:async fn=>{fn();saved++;render();return true;},refresh:async()=>{},render,openLegacy:()=>{},today:()=>'2026-10-28',toast:()=>{},client:{storage:{from:()=>({upload:async()=>{uploadCount++;return{};},remove:async()=>({}),createSignedUrl:async()=>({data:{signedUrl:'https://example.com/photo.jpg'}})})}}});render();
  const q=s=>doc.querySelector(s),click=async s=>{q(s).click();await tick();},fill=(n,v)=>{q(`[name="${n}"]`).value=v;},submit=async()=>{q('#pet-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();};

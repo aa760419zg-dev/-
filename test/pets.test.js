@@ -9,7 +9,7 @@ test('舊飲食紀錄可建立穩定的多寵物對應，重複載入不新增�
 test('用藥開始結束日、間隔日、每日多次與重複餵藥標記',()=>{
  const d=hydratePets(empty());d.petMedications=[{id:'a',petId:'p',drug:'藥 A',dose:'1 顆',start:'2026-10-28',end:'2026-10-30',mode:'每天幾次',times:'2'},{id:'b',petId:'q',drug:'藥 B',start:'2026-10-28',mode:'每幾天一次',everyDays:'3'}];
  assert.equal(medicationSlots(d,'2026-10-27').length,0);assert.equal(medicationSlots(d,'2026-10-28','p').length,2);assert.equal(medicationSlots(d,'2026-10-29','q').length,0);assert.equal(medicationSlots(d,'2026-10-31','q').length,1);assert.equal(medicationSlots(d,'2026-10-31','p').length,0);
- const slot=medicationSlots(d,'2026-10-28','p')[0];recordDose(d,slot.id,'2026-10-28',{id:'user1',name:'阿嘎',at:'2026-10-28T01:00:00Z'});assert.equal(medicationSlots(d,'2026-10-28','p')[0].done.by,'阿嘎');assert.equal(d.petDoses[0].drug,'藥 A');assert.throws(()=>recordDose(d,slot.id,'2026-10-28',{id:'user2',name:'糖糖'}),/已經有人/);assert.equal(d.petDoses.length,1);assert.throws(()=>recordDose(d,'unknown','2026-10-28',{}),/不在今日/);
+ const slot=medicationSlots(d,'2026-10-28','p')[0];recordDose(d,slot.id,'2026-10-28',{id:'user1',name:'阿嘎',at:'2026-10-28T01:00:00Z'});assert.equal(medicationSlots(d,'2026-10-28','p')[0].done.by,'阿嘎');assert.equal(d.petDoses[0].drug,'藥 A');assert.throws(()=>recordDose(d,slot.id,'2026-10-28',{id:'user2',name:'糖糖'}),/已由 阿嘎 標記餵藥/);assert.equal(d.petDoses.length,1);assert.throws(()=>recordDose(d,'unknown','2026-10-28',{}),/不在今日/);
  d.petMedications[0].stopped=true;assert.equal(medicationSlots(d,'2026-10-28','p').length,0);assert.equal(d.petDoses.length,1);
 });
 test('預防保健七天提醒、逾期與同項目的後續紀錄',()=>{
