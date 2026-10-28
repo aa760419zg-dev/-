@@ -45,6 +45,16 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  const expectedNext=model.nextChoreDate(stored.chores[0]);await click('[data-complete]');assert.equal(stored.chores[0].next,expectedNext);assert.equal(stored.chores[0].date,model.today());assert.equal(stored.chores[0].history.length,1);
  await click('[data-pin-chore]');assert.equal(stored.chores[0].pinned,false);await click('#refresh-cloud');assert.match(q('#view').textContent,/廚房濾心/);
  w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
+
+ // 計算機單獨算帳不寫入紀錄，結果只在確認後帶入表單。
+ w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();
+ await click('#open-calculator');assert.equal(q('#form .submit').hidden,true);q('#calc-expression').value='600÷3';await click('[data-calc-key="="]');assert.equal(q('#calc-output').textContent,'200');assert.equal(stored.money.length,1);
+ await click('#calc-apply');assert.equal(q('[name="amount"]').value,'200');assert.equal(q('#form .submit').hidden,false);
+ q('[name="title"]').value='保留用途';q('#calc-details').open=true;q('#calc-expression').value='10÷0';await click('#calc-apply');assert.match(q('#calc-error').textContent,/不能除以 0/);assert.equal(q('[name="amount"]').value,'200');
+ q('#calc-expression').value='-10';await click('#calc-apply');assert.match(q('#calc-error').textContent,/大於 0/);assert.equal(q('[name="amount"]').value,'200');
+ q('#calc-expression').value='120+85×2';await click('#calc-apply');assert.equal(q('[name="amount"]').value,'290');assert.equal(q('[name="title"]').value,'保留用途');assert.equal(stored.money.length,1);
+ q('#calc-details').open=true;await click('[data-calc-key="AC"]');for(const key of ['0','.','1','+','0','.','2'])await click(`[data-calc-key="${key}"]`);await click('[data-calc-key="="]');assert.equal(q('#calc-output').textContent,'0.3');await click('#calc-apply');assert.equal(q('[name="amount"]').value,'0.3');await click('.close');
+ w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
  fail=true;await click('[data-add="money"]');q('[name="amount"]').value='100';q('[name="title"]').value='不應儲存';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(q('#modal').open,true);
  await click('.close');await click('#logout');assert.ok(q('#auth-form'));assert.doesNotMatch(q('#view').textContent,/買菜/);
  }finally{w.close();}

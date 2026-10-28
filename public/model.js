@@ -57,3 +57,32 @@ export function choreFrequency(chore){
  if(unit==='週')return (every===1?'每週':'每 '+every+' 週')+'（週'+['日','一','二','三','四','五','六'][utcDay(chore.anchor||chore.next).getUTCDay()]+'）';
  return (every===1?'每月':'每 '+every+' 個月')+' '+utcDay(chore.anchor||chore.next).getUTCDate()+' 日';
 }
+
+// 只解析數字與四則運算；使用分數計算避免 0.1 + 0.2 的浮點誤差。
+export function calculateAmount(expression){
+ const text=String(expression).replaceAll('×','*').replaceAll('÷','/').replaceAll('−','-').replace(/\s/g,'');
+ if(!text||text.length>120||/[^\d.+*/()\-]/.test(text))throw Error('請輸入有效算式，最多 120 字。');
+ const tokens=text.match(/(?:\d+(?:\.\d*)?|\.\d+)|[()+*/-]/g)||[];
+ if(tokens.join('')!==text)throw Error('算式格式不正確');
+ let pos=0;
+ const apply=(a,b,op)=>{
+  if(op==='+')return [a[0]*b[1]+b[0]*a[1],a[1]*b[1]];
+  if(op==='-')return [a[0]*b[1]-b[0]*a[1],a[1]*b[1]];
+  if(op==='*')return [a[0]*b[0],a[1]*b[1]];
+  if(b[0]===0n)throw Error('不能除以 0');
+  let n=a[0]*b[1],d=a[1]*b[0];if(d<0n){n=-n;d=-d;}return [n,d];
+ };
+ function atom(){
+  const token=tokens[pos++];
+  if(token==='+'||token==='-'){const v=atom();return [token==='-'?-v[0]:v[0],v[1]];}
+  if(token==='('){const value=sum();if(tokens[pos++]!==')')throw Error('請確認括號成對');return value;}
+  if(!token||!/^\d*\.?\d+$|^\d+\.$/.test(token))throw Error('算式尚未完成');
+  const [whole,decimal='']=token.split('.');return [BigInt((whole||'0')+decimal),10n**BigInt(decimal.length)];
+ }
+ function product(){let value=atom();while(tokens[pos]==='*'||tokens[pos]==='/'){const op=tokens[pos++];value=apply(value,atom(),op);}return value;}
+ function sum(){let value=product();while(tokens[pos]==='+'||tokens[pos]==='-'){const op=tokens[pos++];value=apply(value,product(),op);}return value;}
+ const [n,d]=sum();if(pos!==tokens.length)throw Error('算式格式不正確');
+ const abs=n<0n?-n:n,cents=(2n*abs*100n+d)/(2n*d);
+ if(cents>BigInt(Number.MAX_SAFE_INTEGER))throw Error('金額太大，請分次計算');
+ return Number(n<0n?-cents:cents)/100;
+}
