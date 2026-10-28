@@ -5,7 +5,7 @@ export async function retryMutation({getData,setData,getHome,loadHome,save,fn,ma
  for(let attempt=0;;attempt++){
   if(getHome()?.id!==homeId)throw Error('家庭或登入狀態已改變，請重試');
   const before=structuredClone(getData());
-  try{fn();await save();return;}catch(error){
+  try{fn();if(JSON.stringify(before)===JSON.stringify(getData()))return;await save();return;}catch(error){
    setData(before);
    if(!isRevisionConflict(error))throw error;
    // 即使已用盡重試，也更新 revision，讓下一次操作不會一直失敗。

@@ -16,3 +16,5 @@
 
 /* iOS Safari focuses without zooming only when controls are at least 16px. */
 input,select,textarea{font-size:16px!important}.member-badge{display:inline-block;border-left:5px solid;padding:3px 8px;background:#fff;border-radius:4px;margin-left:8px}
+
+.audit-entry{padding:20px 0;border-bottom:1px solid var(--line)}.audit-entry strong{overflow-wrap:anywhere}.audit-entry .toolbar{margin-top:12px}.audit-diff{display:grid;grid-template-columns:100px 1fr 1fr;gap:12px;padding:12px 0;border-top:1px solid var(--line)}.audit-diff small{color:#8a967e}.audit-diff pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:240px;overflow:auto;margin:8px 0}#undo-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;background:#315c4c;color:white;border-radius:10px;padding:14px 24px;box-shadow:0 5px 30px #223d3033}#undo-toast[hidden]{display:none}#undo-toast button{border:0;background:transparent;color:white;text-decoration:underline;font-size:16px;cursor:pointer}@media(max-width:760px){.audit-diff{grid-template-columns:1fr 1fr}.audit-diff>strong{grid-column:1/-1}#undo-toast{bottom:100px;width:max-content;max-width:90%}}

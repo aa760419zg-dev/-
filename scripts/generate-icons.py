@@ -7,11 +7,11 @@ root=Path(__file__).resolve().parents[1]/'public'
 svg=ET.parse(root/'icon.svg').getroot()
 for size,name in [(180,'apple-touch-icon.png'),(192,'icon-192.png'),(512,'icon-512.png')]:
  scale=size*4/192
- image=Image.new('RGBA',(size*4,size*4));draw=ImageDraw.Draw(image)
+ image=Image.new('RGB',(size*4,size*4),'#315c4c');draw=ImageDraw.Draw(image)
  for shape in svg:
   tag=shape.tag.split('}')[-1];a=shape.attrib
   if tag=='rect':
-   draw.rounded_rectangle((0,0,float(a['width'])*scale,float(a['height'])*scale),radius=float(a.get('rx',0))*scale,fill=a['fill'])
+   draw.rectangle((0,0,float(a['width'])*scale,float(a['height'])*scale),fill=a['fill'])
   elif tag=='path':
    tokens=re.findall(r'[MLHVZmlhvz]|-?\d+(?:\.\d+)?',a['d']);i=0;x=y=0;points=[];cmd=''
    while i<len(tokens):

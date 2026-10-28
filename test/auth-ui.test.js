@@ -1,3 +1,5 @@
+import {appendActivity,snapshot} from '../public/activity.js';
+import {createActivityUI} from '../public/activity-ui.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -14,7 +16,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  let stored=model.empty(),rev=0,fail=false,conflictOnce=false,signedOut,actor='owner';
  w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember});w.createPetManager=options=>createPetManager({...options,document:w.document});
+ Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:null}}),signInWithPassword:async()=>({data:{session:{user:{id:actor,email:'one@example.com'}}}}),signOut:async()=>{signedOut?.('SIGNED_OUT',null);return{};},onAuthStateChange:fn=>{signedOut=fn;}}};
  w.rpc=async(name,args)=>{if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true,memberRoster:[{userId:'owner',legacyName:'阿嘎'},{userId:'partner',legacyName:'糖糖'}]};if(name==='family_save'){if(conflictOnce){conflictOnce=false;stored.threshold=7777;if(stored.chores[0])stored.chores[0].note='對方的最新備註';rev++;throw Error('資料已更新');}if(fail)throw Error('資料已更新');assert.equal(args.expected_revision,rev);stored=structuredClone(args.new_document);return ++rev;}};
  const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');w.eval(code);await tick();

@@ -77,3 +77,48 @@ npm start
 `realtime.js` 訂閱 `home:<家庭ID>`，儲存成功只發送 `revision` 事件與 `{revision}`，不廣播資料。另一端僅在收到較新版本後，透過受權限保護的 family_read 讀取；任一編輯 dialog 開啟或正在存檔時延後，關閉後合併處理通知。切換家庭與登出移除頻道。頻道重連、App 回前景及每 60 秒備援可補回漏訊；通知發送失敗不把已成功的存檔誤報為失敗。Broadcast 是僅含版本的公開 topic；不承載家庭資料，實際資料仍由 RPC 成員授權保護。
 
 設定頁修改自己的暱稱及顏色。記帳、休假、健康預設目前登入者；餵藥與就診以登入者 userId 查 members，不以 owner 身分推算暱稱。owner 僅用於舊資料遷移及邀請管理權限。
+
+## 操作紀錄、刪除及還原
+
+所有 App 業務修改經既有 mutate/retryMutation。在同一個重試 callback 中先取快照、套用修改，再依各集合的穩定 ID 產生 activity；之後只存檔一次。操作 ID 與時間在重試外產生，重試時丟棄失敗快照、重新比較最新資料，避免重複紀錄。操作者從 document.members 依 userId 取得，保留操作當時暱稱。
+
+設定頁 → 操作紀錄，可依成員／類別篩選、查看僅變更的欄位。最多保留最近 12 個月內的最新 2000 筆。帳戶設定、暱稱、家務完成／置頂、停藥、餵藥、休假、就診同步帳本以及備份匯入均納入。匯入保留目前 activity，不接受備份歷史覆蓋；匯入快照不包含 activity 本身，避免遞迴膨脹。
+
+每次連動修改共用 groupId。主操作保留 changes（每個集合的 ID、完整前後值與原始位置），寵物刪除的 before 另包含寵物及所有相關紀錄。還原任何一筆連動操作會恢復整組（例如就診與帳本、用藥與餵藥），以維持資料一致；同 ID 不會重複加入。每次真正還原都記錄「還原」，已還原或取消不新增假紀錄。若資料或後續操作紀錄顯示已有較新修改，先警告並確認，再允許覆寫；衝突重試期間也重新檢查。
+
+刪除前列出內容；刪除寵物列相關筆數，刪除有餵藥紀錄的計畫提示改用停用。刪除後提供 5 秒復原提示，逾時仍可從操作紀錄還原。照片只移除資料中的引用，保留雲端檔案供還原，包含編輯時換掉的舊照片；請依實際儲存用量另做人工保留政策。
+
+未來私人行程的操作紀錄會依 before/after 的 visibility 與 ownerId 過濾，非本人不顯示；連動快照或匯入若包含他人的私人行程也不顯示。這是操作紀錄 UI 的前置過濾，單一家庭 JSON 仍可由家庭成員讀取，並非完整私人資料授權方案。
+
+## 雲端歷史版本（已執行）
+
+需在 Supabase 執行 `supabase/history.sql`（已執行，由使用者確認）。此檔逐字保留提供的 SQL。觸發器在文件實際變更時備份上一版，每戶保留最後 200 版；App 的 authenticated/anon 角色無法直接查閱。相同文件只增加 revision 時不備份，符合該 SQL 的 `old.document is distinct from new.document` 條件。
+
+以下僅在 Supabase SQL Editor 以後台管理權限救援。先查詢，確認家庭與版本，再執行還原；不要將管理憑證放到 App。還原會遞增目前 revision，原來的目前文件也會由觸發器備份。
+
+```sql
+-- 先找要救回的版本；將 UUID 換成實際家庭 ID。
+select id, home_id, revision, saved_at, saved_by
+from public.family_document_history
+where home_id = '00000000-0000-0000-0000-000000000000'::uuid
+order by id desc;
+
+-- 確認下方歷史 id 與家庭 id 後，還原至該歷史文件。
+-- 12345 是示範的歷史 id，請換成上方查到的值。
+begin;
+select id from public.family_homes
+where id = '00000000-0000-0000-0000-000000000000'::uuid
+for update;
+update public.family_homes as h
+set document = history.document,
+    revision = h.revision + 1
+from public.family_document_history as history
+where h.id = '00000000-0000-0000-0000-000000000000'::uuid
+  and history.home_id = h.id
+  and history.id = 12345;
+commit;
+```
+
+後台救援是整份文件回復，包含當時的 activity 與 members；請在還原前確認目標內容，並讓兩支手機關閉編輯、重新載入。此方式不經 App 的活動紀錄機制，僅供後台救援。正常使用一律從 App 還原。
+
+PNG 圖示已改為不透明 RGB、四角滿版 #315c4c，讓 iOS 自行裁切；scripts/generate-icons.py 也同步更新。

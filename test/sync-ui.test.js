@@ -1,3 +1,5 @@
+import {appendActivity,snapshot} from '../public/activity.js';
+import {createActivityUI} from '../public/activity-ui.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -16,7 +18,7 @@ test('UI：Broadcast 在編輯時延後，關閉後載入；回前景立即同�
  Object.defineProperty(w.document,'visibilityState',{get:()=>visible});
  w.setInterval=(fn,delay)=>{intervals.push({fn,delay});return 1;};w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember});w.createPetManager=o=>createPetManager({...o,document:w.document});
+ Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=o=>createPetManager({...o,document:w.document});
  const channel={on(type,filter,fn){listener=fn;return this;},subscribe(fn){fn('SUBSCRIBED');},send:async msg=>{sent.push(msg);return 'ok';}};
  w.client={channel:()=>channel,removeChannel(){},auth:{getSession:async()=>({data:{session:{user:{id:'a',email:'a@example.com'}}}}),onAuthStateChange(){}}};
  w.rpc=async(name,args)=>{if(name==='family_read'){reads++;if(readGate)await readGate;return {id:'home',document:structuredClone(stored),revision,owner:true};}if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);return ++revision;}};
