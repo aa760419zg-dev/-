@@ -5,6 +5,8 @@ export function hydratePets(data){
  for(const old of data.pets){if(!old.pet)continue;let p=data.petProfiles.find(p=>p.name===old.pet);if(!p){p={id:'legacy-'+encodeURIComponent(old.pet),name:old.pet,date:old.date||'',species:'',breed:''};data.petProfiles.push(p);}if(!old.petId)old.petId=p.id;if(old.kind==='體重'&&!old.weightImported){const match=String(old.amount||'').trim().match(/^(\d+(?:\.\d{1,2})?)\s*(?:kg|公斤)?$/i);if(match&&Number(match[1])>0&&!data.petWeights.some(x=>x.id==='legacy-weight-'+old.id))data.petWeights.push({id:'legacy-weight-'+old.id,petId:old.petId,date:old.date,weight:match[1],note:old.note||''});old.weightImported=true;}}
  return data;
 }
+export function medicationSlotNames(plan){const count=plan.mode==='每幾天一次'?1:Number(plan.times||1);if(!Number.isInteger(count)||count<1||count>24)return [];const defaults=count===1?['早上']:count===2?['早上','晚上']:count===3?['早上','中午','晚上']:Array.from({length:count},(_,i)=>'第 '+(i+1)+' 次');return defaults.map((name,i)=>typeof plan.slotNames?.[i]==='string'&&plan.slotNames[i].trim()?plan.slotNames[i].trim():name);}
+export function doseSlotName(data,dose){return dose.slotName||medicationSlotNames(data.petMedications?.find(p=>p.id===dose.planId)||{times:Math.max(1,Number(dose.index)||1)})[Number(dose.index)-1]||'用藥';}
 export function medicationSlots(data,date,petId){
  const result=[];
  for(const plan of data.petMedications){
@@ -14,7 +16,7 @@ export function medicationSlots(data,date,petId){
   if(!Number.isInteger(interval)||interval<1||elapsed%interval!==0)continue;
   const count=plan.mode==='每天幾次'?Number(plan.times):1;
   if(!Number.isInteger(count)||count<1||count>24)continue;
-  for(let i=1;i<=count;i++){const id=plan.id+':'+date+':'+i;result.push({id,plan,index:i,done:data.petDoses.find(d=>d.id===id)});}
+  for(let i=1;i<=count;i++){const id=plan.id+':'+date+':'+i;result.push({id,plan,index:i,name:medicationSlotNames(plan)[i-1],done:data.petDoses.find(d=>d.id===id)});}
  }
  return result;
 }
@@ -24,8 +26,8 @@ export function preventiveAlerts(data,date){
 export function recordDose(data,slotId,date,actor){
  const slot=medicationSlots(data,date).find(x=>x.id===slotId);
  if(!slot)throw Error('這次用藥不在今日排程內，請重新確認');
- if(slot.done)throw Error('已由 '+slot.done.by+' 標記餵藥');
- data.petDoses.push({id:slot.id,petId:slot.plan.petId,planId:slot.plan.id,date,index:slot.index,drug:slot.plan.drug,dose:slot.plan.dose,by:actor.name,userId:actor.id,at:actor.at});
+ if(slot.done)throw Error('已由 '+(data.members?.find(m=>m.userId===slot.done.userId)?.name||'未知成員')+' 標記餵藥');
+ data.petDoses.push({id:slot.id,petId:slot.plan.petId,planId:slot.plan.id,date,index:slot.index,slotName:slot.name,drug:slot.plan.drug,dose:slot.plan.dose,by:actor.name,userId:actor.id,at:actor.at});
 }
 export function saveVisit(data,visit){
  const index=data.petVisits.findIndex(x=>x.id===visit.id);if(index<0)data.petVisits.push(visit);else data.petVisits[index]=visit;

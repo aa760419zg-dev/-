@@ -50,7 +50,7 @@ test('分頁同時間戳不漏紀錄、伺服器篩選／100筆上限、24月清
 
 test('一年用量：每天三筆收支、六項每日到期家務，document 小於 500 KB',async t=>{
  const {appendActivity,snapshot}=await import('../public/activity.js');
- const {normalizeNames,nextChoreDate}=await import('../public/model.js');
+ const {normalizeNames,completeChore}=await import('../public/model.js');
  const db=await setup();try{
  await auth(db,a);let home=(await db.query('select public.family_create() as home')).rows[0].home;await admin(db);await db.exec(await sql());await auth(db,a);home=await read(db);
  let document=normalizeNames(home.document);const start=new Date();start.setUTCDate(start.getUTCDate()-364);const startDate=start.toISOString().slice(0,10);
@@ -60,7 +60,7 @@ test('一年用量：每天三筆收支、六項每日到期家務，document �
   const time=new Date(start);time.setUTCDate(start.getUTCDate()+day);const date=time.toISOString().slice(0,10),logs=[];
   const operation=(id,fn)=>{const before=snapshot(document);fn();logs.push(...appendActivity(document,before,{id,at:date+'T12:00:00Z',userId:a}));};
   for(let i=0;i<3;i++)operation('money-'+day+'-'+i,()=>document.money.push({id:'money-'+day+'-'+i,date,kind:'支出',amount:100+i,title:['早餐','午餐','晚餐'][i],category:'伙食',source:'共同帳戶',personUserId:a,person:'阿嘎',note:'家庭日常支出'}));
-  for(let i=0;i<6;i++)operation('complete-'+day+'-'+i,()=>{const chore=document.chores.find(x=>x.id==='chore-'+i);assert.equal(chore.next,date);chore.date=date;chore.history.push(date);chore.next=nextChoreDate(chore,date);});
+  for(let i=0;i<6;i++)operation('complete-'+day+'-'+i,()=>{const chore=document.chores.find(x=>x.id==='chore-'+i);assert.equal(chore.next,date);completeChore(document,chore.id,date,a,date);});
   assert.equal(Object.hasOwn(document,'activity'),false);assert.equal(logs.length,9);total+=logs.length;home.revision=await save(db,home,document,logs);
  }
  const live=(await read(db)).document;const bytes=Buffer.byteLength(JSON.stringify(live));assert.ok(bytes<500000,'document bytes='+bytes);assert.equal(live.money.length,1095);assert.ok(live.chores.every(c=>c.history.length===365));assert.ok(!Object.hasOwn(live,'activity'));

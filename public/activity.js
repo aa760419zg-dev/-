@@ -72,7 +72,7 @@ export function archivedActivity(entry){return entry?.collection==='events'||ent
 export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entries=data.activity||[]}={}){
  const entry=rootEntry({activity:entries},id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
  if(archivedActivity(entry))throw Error('舊行程已封存，僅供查看，不支援還原');
- if(!['刪除','編輯'].includes(entry.action))throw Error('此操作不支援還原');
+ if(!['刪除','編輯'].includes(entry.action)&&!(entry.action==='完成'&&entry.collection==='chores'))throw Error('此操作不支援還原');
  const changes=entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}],current=changes.map(c=>currentFor(data,c));
  if(changes.every((c,i)=>equal(current[i],c.before)))return false;
  const position=entries.findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||entries.slice(position+1).some(e=>e.groupId!==entry.groupId&&(e.collection==='document'||changes.some(c=>c.collection===e.collection&&c.id===e.recordId)));

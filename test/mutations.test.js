@@ -18,7 +18,7 @@ test('非衝突錯誤不重試，回復操作前的文件',async()=>{
 });
 test('餵藥重試遇到對方完成，停止並顯示實際餵藥者，不再次寫入',async()=>{
  let data=hydratePets(empty()),home={id:'h',revision:0},saved=0;
- data.petMedications=[{id:'plan',petId:'pet',start:'2026-10-28',mode:'每天幾次',times:1}];
+ data.members=[{userId:'a',name:'阿嘎',color:'#315c4c'},{userId:'b',name:'糖糖',color:'#b97878'}];data.petMedications=[{id:'plan',petId:'pet',start:'2026-10-28',mode:'每天幾次',times:1}];
  const latest=structuredClone(data);recordDose(latest,'plan:2026-10-28:1','2026-10-28',{id:'b',name:'糖糖',at:'2026-10-28T00:00:00Z'});
  await assert.rejects(retryMutation({getData:()=>data,setData:d=>data=d,getHome:()=>home,loadHome:async()=>{data=structuredClone(latest);home.revision=1;},save:async()=>{saved++;throw Error('資料已更新');},fn:()=>recordDose(data,'plan:2026-10-28:1','2026-10-28',{id:'a',name:'阿嘎',at:'2026-10-28T01:00:00Z'})}),/已由 糖糖 標記餵藥/);
  assert.equal(saved,1);assert.equal(data.petDoses.length,1);assert.equal(data.petDoses[0].by,'糖糖');

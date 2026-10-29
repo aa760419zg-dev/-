@@ -23,3 +23,4 @@ input,select,textarea{font-size:16px!important}.member-badge{display:inline-bloc
 @media(max-width:759px){.record-layout{grid-template-columns:1fr}.record-month{padding:12px 6px}.record-day{min-height:62px;gap:8px}.record-day-amount{display:none}.record-grid{gap:1px}.record-dot{width:5px;height:5px}.record-dots{gap:3px}.record-month-nav{gap:8px}.record-legend{gap:8px}}
 .record-highlight{background:#edf3e4!important;outline:2px solid #87a373;outline-offset:3px;border-radius:8px;scroll-margin:100px}
 #pet-modal>button{margin:6px}
+.chore-status-overdue{background:#f8e9e4;color:#a64435}.chore-status-soon{background:#fff3d3;color:#85621e}.chore-status-later{background:#eaf2e7;color:#315c4c}.chore-row .row-main a{color:inherit;text-decoration:none}.medication-slot-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:759px){.medication-slot-fields{grid-template-columns:1fr}}
