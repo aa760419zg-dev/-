@@ -1,3 +1,5 @@
+import {createActivityStore} from '../public/activity-store.js';
+import {activityRPC,remember} from '../test-support/activity.js';
 import {createRecordCalendar} from '../public/record-calendar-ui.js';
 import {appendActivity,snapshot} from '../public/activity.js';
 import {createActivityUI} from '../public/activity-ui.js';
@@ -12,14 +14,15 @@ import {createHomeSync} from '../public/realtime.js';
 import {ensureMembers,renameMember} from '../public/members.js';
 const tick=()=>new Promise(r=>setTimeout(r,10));
 test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async()=>{
+ const logs=[];
  const dom=new JSDOM(await readFile(new URL('../public/index.html',import.meta.url),'utf8'),{url:'http://localhost/',runScripts:'outside-only'}),w=dom.window;
  try{
  let stored=model.empty(),rev=0,fail=false,conflictOnce=false,signedOut,actor='owner';
  w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
+ w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:null}}),signInWithPassword:async()=>({data:{session:{user:{id:actor,email:'one@example.com'}}}}),signOut:async()=>{signedOut?.('SIGNED_OUT',null);return{};},onAuthStateChange:fn=>{signedOut=fn;}}};
- w.rpc=async(name,args)=>{if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true,memberRoster:[{userId:'owner',legacyName:'阿嘎'},{userId:'partner',legacyName:'糖糖'}]};if(name==='family_save'){if(conflictOnce){conflictOnce=false;stored.threshold=7777;if(stored.chores[0])stored.chores[0].note='對方的最新備註';rev++;throw Error('資料已更新');}if(fail)throw Error('資料已更新');assert.equal(args.expected_revision,rev);stored=structuredClone(args.new_document);return ++rev;}};
+ w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true,memberRoster:[{userId:'owner',legacyName:'阿嘎'},{userId:'partner',legacyName:'糖糖'}]};if(name==='family_save'){if(conflictOnce){conflictOnce=false;stored.threshold=7777;if(stored.chores[0])stored.chores[0].note='對方的最新備註';rev++;throw Error('資料已更新');}if(fail)throw Error('資料已更新');assert.equal(args.expected_revision,rev);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++rev;}};
  const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');w.eval(code);await tick();
  const q=s=>w.document.querySelector(s), click=async s=>{q(s).click();await tick();};
  assert.ok(q('#auth-form'));q('[name="email"]').value='one@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();assert.ok(q('#record-add'));

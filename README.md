@@ -85,9 +85,9 @@ npm start
 
 ## 操作紀錄、刪除及還原
 
-所有 App 業務修改經既有 mutate/retryMutation。在同一個重試 callback 中先取快照、套用修改，再依各集合的穩定 ID 產生 activity；之後只存檔一次。操作 ID 與時間在重試外產生，重試時丟棄失敗快照、重新比較最新資料，避免重複紀錄。操作者從 document.members 依 userId 取得，保留操作當時暱稱。
+所有 App 業務修改經既有 mutate/retryMutation。在同一個重試 callback 中先取快照、套用修改，再依各集合的穩定 ID 產生 activity；將不含 activity 的文件與本次紀錄分別作為 `family_save` 的 `new_document`、`new_activity` 傳送，在同一筆資料庫交易中儲存。操作 ID 與時間在重試外產生，重試時丟棄失敗快照、重新比較最新資料，避免重複紀錄。操作者從 document.members 依 userId 取得，保留操作當時暱稱。
 
-設定頁 → 操作紀錄，可依成員／類別篩選、查看僅變更的欄位。最多保留最近 12 個月內的最新 2000 筆。帳戶設定、暱稱、家務完成／置頂、停藥、餵藥、休假、就診同步帳本以及備份匯入均納入。匯入保留目前 activity，不接受備份歷史覆蓋；匯入快照不包含 activity 本身，避免遞迴膨脹。
+設定頁 → 操作紀錄，可依成員／類別篩選、查看僅變更的欄位。在獨立的 `family_activity` 表保留最近 24 個月，無 2000 筆上限；列表每頁 50 筆，捲到底自動載入（也可按載入更多），篩選由伺服器執行。帳戶設定、暱稱、家務完成／置頂、停藥、餵藥、休假、就診同步帳本以及備份匯入均納入。匯入不覆蓋資料表中的操作紀錄，也不接受備份歷史覆蓋；匯入快照不包含 activity 本身，避免遞迴膨脹。
 
 每次連動修改共用 groupId。主操作保留 changes（每個集合的 ID、完整前後值與原始位置），寵物刪除的 before 另包含寵物及所有相關紀錄。還原任何一筆連動操作會恢復整組（例如就診與帳本、用藥與餵藥），以維持資料一致；同 ID 不會重複加入。每次真正還原都記錄「還原」，已還原或取消不新增假紀錄。若資料或後續操作紀錄顯示已有較新修改，先警告並確認，再允許覆寫；衝突重試期間也重新檢查。
 
@@ -95,9 +95,26 @@ npm start
 
 未來私人行程的操作紀錄會依 before/after 的 visibility 與 ownerId 過濾，非本人不顯示；連動快照或匯入若包含他人的私人行程也不顯示。這是操作紀錄 UI 的前置過濾，單一家庭 JSON 仍可由家庭成員讀取，並非完整私人資料授權方案。
 
-## 雲端歷史版本 v2（需執行升級）
+## 操作紀錄資料表升級（activity.sql）
 
-先前 v1 已由使用者確認執行；目前檔案已改為使用者提供的 v2 SQL，尚未確認在雲端執行。需在 Supabase SQL Editor 執行更新後的 `supabase/history.sql`，只更新 GitHub／部署 App 不會升級資料庫。
+執行順序：
+
+1. 先部署包含 `public/activity-store.js` 的新版前端，讓兩支手機重新整理。資料庫仍是舊版時，前端會在送出存檔的當下使用舊協定保存操作紀錄；記憶體內的家庭 document 已不再包含 activity。
+2. 確認 `supabase/history.sql` v2 已執行（本專案使用者已確認）。
+3. 既有環境不用重跑 `setup.sql`。到 Supabase → SQL Editor → New，貼上 **完整的 `supabase/activity.sql`**，按 Run。成功後目前資料中的 activity 會一次性搬到 `family_activity`，原文件移除此欄位並遞增 revision。可重複執行，不會重複搬移或刪除帳本／寵物等資料。
+4. 兩支手機再次重新整理；新增一筆紀錄並進設定 → 操作紀錄確認可見。仍開著的舊版 App 送來含 activity 的文件，也會由新版 family_save 原子地搬入資料表，不會把活動歷史放回文件。
+
+遷移與存檔都會鎖定家庭資料列，revision 檢查成功後才提交文件與操作紀錄；紀錄驗證失敗也會整筆回滾。新紀錄每次最多 100 筆，舊文件中既有的 activity 不受這個批次上限限制。相同 id 使用 `on conflict do nothing` 去重。伺服器在寫入時清理該家庭 24 個月以前的紀錄；讀取也排除已到期紀錄。一般成員與匿名角色沒有表的直接讀寫權限，只能透過限本家庭的 list/get RPC 讀取。
+
+分頁以 `(at, id)` 倒序，除了要求的 before_at 參數，增加可選的 `before_id` 游標，避免相同時間戳記跨頁漏紀錄。還原會取得原操作的完整 root 紀錄，查詢它之後的活動；每次衝突重試前都重新查詢再確認。五秒復原提示使用剛存檔成功的記憶體快照。私人行程仍由 visibleActivity 在前端過濾；不是資料庫層的私人授權。
+
+本機 PostgreSQL 相容測試模擬一年每天 3 筆收支、6 項每日家務都到期完成：家庭文件為 282,544 bytes（低於 500 KB），3,285 筆操作紀錄獨立保存。這是該模擬情境的結果，業務資料仍會隨使用時間增加。
+
+匯出 JSON 現在只包含家庭業務資料，不包含獨立操作紀錄；要完整備份活動歷史須另備份 `family_activity`。舊 JSON 備份內的 activity 不覆蓋現在的操作歷史。歷史 v2 只備份業務文件，不重複儲存操作紀錄。月曆搜尋在中文組字完成後防抖 200ms，只更新結果區，不重建輸入框。
+
+## 雲端歷史版本 v2（使用者已確認執行）
+
+`supabase/history.sql` 保留使用者先前提供的完整 v2 SQL，使用者已確認在 Supabase 執行成功。全新環境仍須在 SQL Editor 執行；更新 GitHub／部署 App 不會自動執行資料庫 SQL。
 
 v2 在排除 `activity` 後的資料實際變更時備份上一版，每戶保留最後 200 版。新歷史不含操作紀錄；升級也會移除既有歷史中的 `activity`，但保留版本及其他資料，且不修改目前家庭文件的 `activity`。若仍需舊歷史的操作紀錄，升級前請另存備份。只有操作紀錄變更或只增加 revision 時不產生歷史，因此歷史 revision 可以不連號。App 的 authenticated/anon 角色無法直接查閱。
 
@@ -119,8 +136,11 @@ select id from public.family_homes
 where id = '00000000-0000-0000-0000-000000000000'::uuid
 for update;
 update public.family_homes as h
-set document = (history.document - 'activity')
-    || jsonb_build_object('activity', coalesce(h.document->'activity', '[]'::jsonb)),
+set document = case when h.document ? 'activity'
+      then (history.document - 'activity')
+        || jsonb_build_object('activity', h.document->'activity')
+      else history.document - 'activity'
+    end,
     revision = h.revision + 1
 from public.family_document_history as history
 where h.id = '00000000-0000-0000-0000-000000000000'::uuid
@@ -129,6 +149,6 @@ where h.id = '00000000-0000-0000-0000-000000000000'::uuid
 commit;
 ```
 
-後台救援回復歷史業務資料與 members，但保留救援前目前的 activity（若沒有則使用空陣列）；操作紀錄不代表被救回版本當時的狀態。請在還原前確認目標內容，並讓兩支手機關閉編輯、重新載入。此方式不經 App 的活動紀錄機制，僅供後台救援。正常使用一律從 App 還原。
+後台救援回復歷史業務資料與 members，不修改獨立的 `family_activity` 表，也不把 activity 放回新版文件。範例的條件分支只為尚未遷移的舊文件保留其現有 activity；操作紀錄不代表被救回版本當時的狀態。請在還原前確認目標內容，並讓兩支手機關閉編輯、重新載入。此方式不經 App 的活動紀錄機制，僅供後台救援。正常使用一律從 App 還原。
 
 PNG 圖示已改為不透明 RGB、四角滿版 #315c4c，讓 iOS 自行裁切；scripts/generate-icons.py 也同步更新。

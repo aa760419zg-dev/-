@@ -2,12 +2,12 @@ import {hydratePets,petCollections} from './pets-model.js';
 export const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export function balance(data){return Number(data.opening||0)+data.money.reduce((sum,x)=>sum+(x.kind==='存入'?Number(x.amount):x.source==='共同帳戶'?-Number(x.amount):0),0);}
 export function expense(data,month){return data.money.filter(x=>x.kind==='支出'&&x.date.startsWith(month)).reduce((s,x)=>s+Number(x.amount),0);}
-export const empty=()=>({version:1,activity:[],opening:0,threshold:3000,money:[],events:[],pets:[],chores:[],health:[]});
+export const empty=()=>({version:1,opening:0,threshold:3000,money:[],events:[],pets:[],chores:[],health:[]});
 export function validData(d){return d&&d.version===1&&Number.isFinite(d.opening)&&Number.isFinite(d.threshold)&&['money','events','pets','chores','health'].every(k=>Array.isArray(d[k])&&d[k].every(x=>x&&typeof x==='object'&&typeof x.id==='string'&&typeof x.date==='string'))&&(d.activity===undefined||(Array.isArray(d.activity)&&d.activity.every(e=>e&&typeof e.id==='string'&&typeof e.at==='string')))&&(d.members===undefined||(Array.isArray(d.members)&&d.members.every(m=>m&&typeof m.userId==='string'&&typeof m.name==='string'&&/^#[0-9a-f]{6}$/i.test(m.color))))&&petCollections.every(k=>d[k]===undefined||(Array.isArray(d[k])&&d[k].every(x=>x&&typeof x.id==='string'&&typeof x.date==='string')));}
 
 // 舊稱呼相容：保留封存的 events 原樣，只轉換使用中的成員欄位。
 export function normalizeNames(document){
- const copy=structuredClone(document);if(!Array.isArray(copy.activity))copy.activity=[];
+ const copy=structuredClone(document);delete copy.activity;
  const names={'我':'阿嘎','先生':'阿嘎','太太':'糖糖'};
  for(const kind of ['money','health'])for(const record of copy[kind]){
   const old=record.person;

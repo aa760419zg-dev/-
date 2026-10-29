@@ -66,6 +66,6 @@ test('歷史 v2 升級清除舊歷史 activity、可重跑且不改目前文件�
  const withoutActivity={...recovered.document,opening:700};delete withoutActivity.activity;
  revision=await save(db,recovered.revision,withoutActivity);
  await db.exec(example.replaceAll('00000000-0000-0000-0000-000000000000',home.id).replace('history.id = 12345','history.id = '+target.id));
- assert.deepEqual((await db.query('select document from public.family_homes where id=$1',[home.id])).rows[0].document.activity,[]);
+ assert.equal(Object.hasOwn((await db.query('select document from public.family_homes where id=$1',[home.id])).rows[0].document,'activity'),false);
  }finally{await db.close();}
 });

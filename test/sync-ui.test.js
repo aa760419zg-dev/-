@@ -1,3 +1,5 @@
+import {createActivityStore} from '../public/activity-store.js';
+import {activityRPC,remember} from '../test-support/activity.js';
 import {createRecordCalendar} from '../public/record-calendar-ui.js';
 import {appendActivity,snapshot} from '../public/activity.js';
 import {createActivityUI} from '../public/activity-ui.js';
@@ -12,6 +14,7 @@ import {createHomeSync} from '../public/realtime.js';
 import {ensureMembers,renameMember} from '../public/members.js';
 const tick=()=>new Promise(r=>setTimeout(r,20));
 test('UI：Broadcast 在編輯時延後，關閉後載入；回前景立即同步；60 秒備援',async()=>{
+ const logs=[];
  const dom=new JSDOM(await readFile(new URL('../public/index.html',import.meta.url),'utf8'),{url:'http://localhost/',runScripts:'outside-only'}),w=dom.window;
  try{
  let stored=model.empty(),revision=1,reads=0,listener,visible='visible',intervals=[],sent=[],readGate=null;
@@ -19,10 +22,10 @@ test('UI：Broadcast 在編輯時延後，關閉後載入；回前景立即同�
  Object.defineProperty(w.document,'visibilityState',{get:()=>visible});
  w.setInterval=(fn,delay)=>{intervals.push({fn,delay});return 1;};w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=o=>createPetManager({...o,document:w.document});
+ w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=o=>createPetManager({...o,document:w.document});
  const channel={on(type,filter,fn){listener=fn;return this;},subscribe(fn){fn('SUBSCRIBED');},send:async msg=>{sent.push(msg);return 'ok';}};
  w.client={channel:()=>channel,removeChannel(){},auth:{getSession:async()=>({data:{session:{user:{id:'a',email:'a@example.com'}}}}),onAuthStateChange(){}}};
- w.rpc=async(name,args)=>{if(name==='family_read'){reads++;if(readGate)await readGate;return {id:'home',document:structuredClone(stored),revision,owner:true};}if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);return ++revision;}};
+ w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read'){reads++;if(readGate)await readGate;return {id:'home',document:structuredClone(stored),revision,owner:true};}if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++revision;}};
  w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();await tick();
  const q=s=>w.document.querySelector(s),click=async s=>{q(s).click();await tick();};
  await click('#record-add');await click('[data-record-add="money"]');q('[name="title"]').value='未送出的草稿';const before=reads;

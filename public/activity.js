@@ -27,10 +27,6 @@ export function describe(data,collection,record){
  if(collection==='petVisits')return [pet,record.date,record.hospital,'NT$'+Number(record.cost||0).toLocaleString('zh-TW')].filter(Boolean).join(' · ');
  return [pet,record.date,record.title||record.drug||record.item||record.name||(collection==='petWeights'?record.weight+' kg':collection==='members'?record.name:'帳戶設定')].filter(Boolean).join(' · ');
 }
-export function pruneActivity(activity,at){
- const date=new Date(at),year=date.getUTCFullYear()-1,month=date.getUTCMonth(),day=Math.min(date.getUTCDate(),new Date(Date.UTC(year,month+1,0)).getUTCDate());const cutoff=Date.UTC(year,month,day,date.getUTCHours(),date.getUTCMinutes(),date.getUTCSeconds(),date.getUTCMilliseconds());
- return activity.filter(x=>Number.isFinite(Date.parse(x.at))&&Date.parse(x.at)>=cutoff).sort((a,b)=>a.at.localeCompare(b.at)).slice(-2000);
-}
 // 在 mutate 的可重試 callback 中呼叫，與資料一起交給 family_save。
 export function appendActivity(data,before,{id,at,userId,action,summary,restoreOf,importing=false}){
  const member=before.members?.find(x=>x.userId===userId)||data.members?.find(x=>x.userId===userId);if(!member)throw Error('找不到操作者成員身分');
@@ -48,8 +44,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
   if(entry.id===rootId){if(changes.length>1||(c.collection==='petProfiles'&&!c.after))entry.changes=clone(changes);if(c.collection==='petProfiles'&&!c.after){const bundle={pet:clone(c.before)};for(const other of changes)if(other!==c&&other.before&&!other.after)(bundle[other.collection]??=[]).push(clone(other.before));entry.before=bundle;}}
   return entry;
  });
- logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));const previous=data.activity||[];for(const log of logs)if(!previous.some(x=>x.id===log.id))previous.push(log);
- data.activity=pruneActivity(previous,at);return logs;
+ logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));return logs;
 }
 export function deleteRecord(data,collection,id){
  const record=(data[collection]||[]).find(x=>recordKey(collection,x)===id);if(!record)throw Error('紀錄已被刪除');
@@ -74,18 +69,18 @@ export function rootEntry(data,id){const entry=data.activity?.find(x=>x.id===id)
 export function currentFor(data,change){if(change.collection==='settings')return {opening:data.opening,threshold:data.threshold};if(change.collection==='document')return snapshot(data);return clone((data[change.collection]||[]).find(x=>recordKey(change.collection,x)===change.id));}
 export function restoreState(data,entry){return (entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}]).map(c=>currentFor(data,c));}
 export function archivedActivity(entry){return entry?.collection==='events'||entry?.changes?.some(c=>c.collection==='events');}
-export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true}={}){
- const entry=rootEntry(data,id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
+export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entries=data.activity||[]}={}){
+ const entry=rootEntry({activity:entries},id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
  if(archivedActivity(entry))throw Error('舊行程已封存，僅供查看，不支援還原');
  if(!['刪除','編輯'].includes(entry.action))throw Error('此操作不支援還原');
  const changes=entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}],current=changes.map(c=>currentFor(data,c));
  if(changes.every((c,i)=>equal(current[i],c.before)))return false;
- const position=(data.activity||[]).findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||(data.activity||[]).slice(position+1).some(e=>e.groupId!==entry.groupId&&changes.some(c=>c.collection===e.collection&&c.id===e.recordId));
+ const position=entries.findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||entries.slice(position+1).some(e=>e.groupId!==entry.groupId&&(e.collection==='document'||changes.some(c=>c.collection===e.collection&&c.id===e.recordId)));
  if((ask||newer)&&!confirm((newer?'此紀錄之後已有修改，還原會覆蓋較新的內容。\n':'')+'確定還原「'+entry.summary+'」及其連動紀錄？'))return false;
  for(const change of changes){
   if(!Object.hasOwn(areas,change.collection)&&!['settings','document'].includes(change.collection))throw Error('不支援還原這個資料類型');const target=clone(change.before);
   if(change.collection==='settings'){data.opening=target.opening;data.threshold=target.threshold;continue;}
-  if(change.collection==='document'){const activity=data.activity,events=clone(data.events);for(const k of Object.keys(data))if(k!=='activity')delete data[k];Object.assign(data,target);data.activity=activity;data.events=events;continue;}
+  if(change.collection==='document'){const events=clone(data.events);for(const k of Object.keys(data))delete data[k];Object.assign(data,snapshot(target));data.events=events;continue;}
   const list=data[change.collection]??=[];const index=list.findIndex(x=>recordKey(change.collection,x)===change.id);
   if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.splice(Number.isInteger(change.beforeIndex)?Math.min(change.beforeIndex,list.length):list.length,0,target);
  }

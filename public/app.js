@@ -1,3 +1,4 @@
+import {createActivityStore} from './activity-store.js';
 import {createRecordCalendar} from './record-calendar-ui.js';
 import {appendActivity,snapshot} from './activity.js';
 import {createActivityUI} from './activity-ui.js';
@@ -9,8 +10,10 @@ import {client,rpc} from './cloud.js';
 import {today,balance,expense,empty,validData,normalizeNames,exerciseSummary,choreStatus,nextChoreDate,choreFrequency,choreRule,calculateAmount} from './model.js';
 const $=s=>document.querySelector(s), key='our-home-v1';
 let data=empty(),session=null,cloudHome=null,loading=true,busy=false,authBusy=false,loadedUserId=null;
+const activityStore=createActivityStore({rpc,getHome:()=>cloudHome});
+let pendingActivity=[];
 const petManager=createPetManager({getData:()=>data,getHome:()=>cloudHome,getSession:()=>session,mutate,refresh:loadHome,render,openLegacy:open,today,toast,client,getMember:currentMember,removeRecord:(collection,id)=>activityUI.remove(collection,id)});
-const activityUI=createActivityUI({getData:()=>data,getUserId:()=>session?.user.id,mutate,render,toast});
+const activityUI=createActivityUI({getData:()=>data,getUserId:()=>session?.user.id,mutate,render,toast,activity:activityStore});
 const pages=[['home','⌂','首頁總覽'],['money','▤','家庭帳本'],['pets','♧','寵物日記'],['chores','♧','家務排程'],['health','♡','運動健康']];
 let page='home',month=today().slice(0,7),person='',petFilter='',healthMonth=today().slice(0,7),healthDay='';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,21 +26,21 @@ function currentMember(){return data.members?.find(m=>m.userId===session?.user.i
 function displayPerson(record){return data.members?.find(m=>m.userId===record.personUserId)?.name||data.members?.find(m=>m.name===record.person)?.name||(record.person==='一起'?'一起':'未知成員');}
 function matchesPerson(record,name){const member=data.members?.find(m=>m.name===name);return record.personUserId?record.personUserId===member?.userId:record.person===name;}
 const memberNames=()=>data.members?.map(m=>m.name)||[];
-function editingOpen(){return Boolean($('#modal')?.open||$('#pet-modal')?.open);}
+function editingOpen(){return Boolean($('#modal')?.open||$('#pet-modal')?.open||recordCalendar.isComposing());}
 const homeSync=createHomeSync({client,getHome:()=>cloudHome,isBlocked:()=>busy||authBusy||loading||editingOpen()||document.visibilityState==='hidden',load:()=>loadHome({deferIfEditing:true}),render,onError:()=>toast('暫時無法同步，回到 App 或稍後會自動重試')});
 async function save(){
  if(!cloudHome)throw Error('請先登入並建立或加入家庭');
- cloudHome.revision=await rpc('family_save',{expected_revision:cloudHome.revision,new_document:data});
+ cloudHome.revision=await activityStore.save(snapshot(data),pendingActivity,cloudHome.revision);
  // Realtime 僅傳 revision，不傳家庭資料。
  homeSync.connect();void homeSync.notify(cloudHome.revision);
 }
 async function mutate(fn,options={}){
  if(busy||authBusy){toast('正在儲存，請稍候');return false;}
  busy=true;const context={...options,id:options.id||crypto.randomUUID(),at:new Date().toISOString(),userId:session.user.id};
- const audited=()=>{const before=snapshot(data),history=options.importing?structuredClone(data.activity||[]):null;fn();data.events=structuredClone(before.events);if(options.importing)data.activity=history;appendActivity(data,before,context);};
- try{await retryMutation({getData:()=>data,setData:value=>{data=value;},getHome:()=>cloudHome,loadHome,save,fn:audited});render();return true;}
+ const audited=()=>{const before=snapshot(data);fn();data.events=structuredClone(before.events);delete data.activity;pendingActivity=appendActivity(data,before,context);};
+ try{await retryMutation({getData:()=>data,setData:value=>{data=value;},getHome:()=>cloudHome,loadHome,save,fn:audited,beforeAttempt:options.prepare,hasPendingActivity:()=>pendingActivity.length>0});activityUI.invalidate();render();return true;}
  catch(error){render();toast(error.message);return false;}
- finally{busy=false;void homeSync.flush();}
+ finally{pendingActivity=[];busy=false;void homeSync.flush();}
 }
 function authView(){return heading('OUR HOME, TOGETHER','歡迎回家','登入後，與另一半一起照顧生活。')+`<div class="card auth-card"><form id="auth-form"><label class="field">Email<input type="email" name="email" autocomplete="email" required></label><label class="field">密碼<input type="password" name="password" autocomplete="current-password" minlength="8" required></label><div class="backup-buttons"><button class="primary" type="submit" name="action" value="login">登入</button><button class="subtle" type="submit" name="action" value="signup">建立帳號</button></div><p class="hint">你與另一半各自註冊帳號。首次註冊後，請到信箱完成驗證再回來登入。密碼至少 8 碼。</p><p id="auth-message" role="status"></p></form></div>`;}
 function familyView(){return heading('ONE HOME, TWO HEARTS','建立我們的家','一人先建立家庭，再邀請另一半加入。')+`<div class="card auth-card"><p class="hint">已登入：${esc(session.user.email)}</p><div class="backup-buttons"><button class="primary" id="create-home">建立新家庭</button><button class="subtle" id="join-home">接受另一半的邀請</button><button class="subtle" id="logout">登出</button></div><p class="hint">若另一半已建立家庭，請先讓對方在「帳戶設定」輸入你的註冊 Email，再按接受邀請。每個帳號只能加入一個家庭。</p></div>`;}
@@ -47,11 +50,11 @@ async function loadHome({deferIfEditing=false}={}){
  for(let attempt=0;attempt<4;attempt++){
   const result=await rpc('family_read');if(session?.user.id!==userId)return false;if(deferIfEditing&&(editingOpen()||busy||authBusy)){void homeSync.request();return false;}
   if(result&&!validData(result.document))throw Error('雲端資料格式不相容，請勿覆寫，先聯絡維護者。');
-  cloudHome=result;data=result?normalizeNames(result.document):empty();
+  cloudHome=result;activityStore.ingest(result?.document);activityUI.invalidate();data=result?normalizeNames(result.document):empty();
   if(result){
    const oldMembers=JSON.stringify(data.members||[]);ensureMembers(data,result.memberRoster||[],userId,result.owner);
    if(oldMembers!==JSON.stringify(data.members)){
-    try{data=normalizeNames(result.document);const migration={id:crypto.randomUUID(),at:new Date().toISOString(),userId,summary:'建立成員身分對應'};await retryMutation({getData:()=>data,setData:value=>{data=value;},getHome:()=>cloudHome,loadHome:async()=>{const fresh=await rpc('family_read');cloudHome=fresh;data=normalizeNames(fresh.document);},save,fn:()=>{const before=snapshot(data);ensureMembers(data,result.memberRoster||[],userId,result.owner);appendActivity(data,before,migration);}});}
+    try{data=normalizeNames(result.document);const migration={id:crypto.randomUUID(),at:new Date().toISOString(),userId,summary:'建立成員身分對應'};await retryMutation({getData:()=>data,setData:value=>{data=value;},getHome:()=>cloudHome,loadHome:async()=>{const fresh=await rpc('family_read');cloudHome=fresh;activityStore.ingest(fresh.document);data=normalizeNames(fresh.document);},save,fn:()=>{const before=snapshot(data);ensureMembers(data,result.memberRoster||[],userId,result.owner);pendingActivity=appendActivity(data,before,migration);}});}
     catch(error){if(/資料已更新|revision conflict/i.test(error.message)&&attempt<3)continue;throw error;}
    }
    if(loadedUserId!==userId||!memberNames().includes(person)){person=currentMember().name;loadedUserId=userId;}
@@ -127,7 +130,7 @@ async function cloudClick(b){
  if(authBusy||busy){toast('正在處理，請稍候');return true;}
  authBusy=true;b.disabled=true;
  try{
-  if(b.id==='logout'){const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;session=null;cloudHome=null;data=empty();homeSync.disconnect();loadedUserId=null;activityUI.clear();petManager.close();$('#modal').close();render();}
+  if(b.id==='logout'){const {error}=await client.auth.signOut({scope:'local'});if(error)throw error;session=null;cloudHome=null;data=empty();homeSync.disconnect();loadedUserId=null;activityUI.clear();activityStore.reset();petManager.close();$('#modal').close();render();}
   if(b.id==='create-home'||b.id==='join-home'){await rpc(b.id==='create-home'?'family_create':'family_join');await loadHome();render();}
   if(b.id==='invite-partner'){const email=$('#invite-email').value.trim();if(!email||!$('#invite-email').checkValidity())throw new Error('請輸入另一半的有效 Email');await rpc('family_invite',{email});toast('邀請已儲存，請另一半註冊、驗證信箱並按接受邀請。');}
   if(b.id==='refresh-cloud'){$('#modal').close();await loadHome();render();toast('已載入最新家庭資料');}
@@ -148,7 +151,7 @@ document.addEventListener('submit',async e=>{
  finally{authBusy=false;form.querySelectorAll('button').forEach(b=>b.disabled=false);void homeSync.flush();}
 });
 client.auth.onAuthStateChange((event,newSession)=>{
- if(event==='SIGNED_OUT'){session=null;cloudHome=null;data=empty();homeSync.disconnect();loadedUserId=null;activityUI.clear();petManager.close();$('#modal').close();render();}
+ if(event==='SIGNED_OUT'){session=null;cloudHome=null;data=empty();homeSync.disconnect();loadedUserId=null;activityUI.clear();activityStore.reset();petManager.close();$('#modal').close();render();}
  if(event==='TOKEN_REFRESHED')session=newSession;
 });
 setInterval(()=>{if(session&&cloudHome&&document.visibilityState!=='hidden')void homeSync.request();},60000);
