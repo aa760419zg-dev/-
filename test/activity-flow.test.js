@@ -1,3 +1,4 @@
+import {createMobileUI} from '../public/mobile-ui.js';
 import {createActivityStore} from '../public/activity-store.js';
 import {activityRPC,remember} from '../test-support/activity.js';
 import {createRecordCalendar} from '../public/record-calendar-ui.js';
@@ -20,7 +21,7 @@ test('全站 UI：帳本／行程／飲食編輯刪除、5 秒復原、就診連
  let stored=model.normalizeNames(model.empty()),revision=1,confirmations=[];
  const archived=[{id:'archived',date:'2026-10-01',person:'先生',type:'休假',title:'先生休假',note:'保留原樣'}];stored.events=structuredClone(archived);stored.members=[{userId:'a',name:'阿嘎',color:'#315c4c'},{userId:'b',name:'糖糖',color:'#b97878'}];stored.petProfiles=[{id:'p',name:'小橘',species:'貓',date:model.today()}];
  w.structuredClone=structuredClone;w.confirm=message=>{confirmations.push(message);return true;};w.scrollTo=()=>{};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createPetManager=o=>createPetManager({...o,document:w.document});w.createActivityUI=o=>createActivityUI({...o,document:w.document});
+ w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});w.createMobileUI=o=>createMobileUI({...o,document:w.document});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createPetManager=o=>createPetManager({...o,document:w.document});w.createActivityUI=o=>createActivityUI({...o,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:{user:{id:'a'}}}}),onAuthStateChange(){}}};
  w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read')return {id:'home',owner:true,revision,document:structuredClone(stored)};if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++revision;}};
  w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();

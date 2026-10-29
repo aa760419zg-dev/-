@@ -1,3 +1,4 @@
+import {createMobileUI} from '../public/mobile-ui.js';
 import {createActivityStore} from '../public/activity-store.js';
 import {activityRPC,remember} from '../test-support/activity.js';
 import {createRecordCalendar} from '../public/record-calendar-ui.js';
@@ -20,11 +21,11 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  let stored=model.empty(),rev=0,fail=false,conflictOnce=false,signedOut,actor='owner';
  w.structuredClone=structuredClone;w.confirm=()=>true;w.scrollTo=()=>{};
  w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
+ w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});w.createMobileUI=o=>createMobileUI({...o,document:w.document});Object.assign(w,model,{createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:null}}),signInWithPassword:async()=>({data:{session:{user:{id:actor,email:'one@example.com'}}}}),signOut:async()=>{signedOut?.('SIGNED_OUT',null);return{};},onAuthStateChange:fn=>{signedOut=fn;}}};
  w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true,memberRoster:[{userId:'owner',legacyName:'阿嘎'},{userId:'partner',legacyName:'糖糖'}]};if(name==='family_save'){if(conflictOnce){conflictOnce=false;stored.threshold=7777;if(stored.chores[0])stored.chores[0].note='對方的最新備註';rev++;throw Error('資料已更新');}if(fail)throw Error('資料已更新');assert.equal(args.expected_revision,rev);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++rev;}};
  const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');w.eval(code);await tick();
- const q=s=>w.document.querySelector(s), click=async s=>{q(s).click();await tick();};
+ const q=s=>w.document.querySelector(s), click=async s=>{q(s).click();await tick();};const setHealthMonth=async value=>{for(let i=0;i<120;i++){const match=q('.page-month-picker h2').textContent.match(/(\d+)年(\d+)月/),current=match[1]+'-'+match[2].padStart(2,'0');if(current===value)return;await click(`[data-page-month="health"][data-step="${current<value?1:-1}"]`);}throw Error('月份切換失敗');};
  assert.ok(q('#auth-form'));q('[name="email"]').value='one@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();assert.ok(q('#record-add'));
  w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');q('[name="amount"]').value='200';q('[name="title"]').value='買菜';q('[name="category"]').value='  生鮮蔬果  ';conflictOnce=true;q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(stored.threshold,7777);assert.equal(stored.money[0].category,'生鮮蔬果');assert.match(q('#view').textContent,/買菜/);w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');assert.ok(q('[data-category="生鮮蔬果"]'));await click('[data-category="生鮮蔬果"]');assert.equal(q('[name="category"]').value,'生鮮蔬果');await click('.close');
 
@@ -36,14 +37,14 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  q('[name="totalCalories"]').value='150';q('[name="avgHeartRate"]').value='110';q('[name="distance"]').value='2';
  q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.health.length,1);const id=stored.health[0].id;
  w.location.hash='health';w.dispatchEvent(new w.Event('hashchange'));await tick();
- q('#health-month').value='2026-10';q('#health-month').dispatchEvent(new w.Event('change',{bubbles:true}));
+ await setHealthMonth('2026-10');
  assert.match(q('#view').textContent,/戶外健走/);assert.match(q('#view').textContent,/平均心率 110/);
  await click('[data-edit-health]');assert.equal(q('[name="title"]').value,'戶外健走');assert.equal(q('[name="activeCalories"]').value,'120');
  q('[name="title"]').value='戶外健走與伸展';q('[name="minutes"]').value='30';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  assert.equal(stored.health.length,1);assert.equal(stored.health[0].id,id);assert.equal(stored.health[0].minutes,'30');assert.equal(stored.health[0].totalCalories,'150');
  await click('#settings');await click('#refresh-cloud');assert.match(q('#view').textContent,/戶外健走與伸展/);
- q('#health-month').value='2026-09';q('#health-month').dispatchEvent(new w.Event('change',{bubbles:true}));assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
- q('#health-month').value='2026-10';q('#health-month').dispatchEvent(new w.Event('change',{bubbles:true}));
+ await setHealthMonth('2026-09');assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
+ await setHealthMonth('2026-10');
  q('#health-person').value='糖糖';q('#health-person').dispatchEvent(new w.Event('change',{bubbles:true}));assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
  w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
 
@@ -66,10 +67,10 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  q('#calc-details').open=true;await click('[data-calc-key="AC"]');for(const key of ['0','.','1','+','0','.','2'])await click(`[data-calc-key="${key}"]`);await click('[data-calc-key="="]');assert.equal(q('#calc-output').textContent,'0.3');await click('#calc-apply');assert.equal(q('[name="amount"]').value,'0.3');await click('.close');
  w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
  fail=true;w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');q('[name="amount"]').value='100';q('[name="title"]').value='不應儲存';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(q('#modal').open,true);
- await click('.close');await click('#logout');assert.ok(q('#auth-form'));assert.doesNotMatch(q('#view').textContent,/買菜/);
+ await click('.close');await click('#settings');await click('#logout');assert.ok(q('#auth-form'));assert.doesNotMatch(q('#view').textContent,/買菜/);
  // 同一份 document，非 owner 登入的預設值及可修改暱稱都依 userId。
  fail=false;actor='partner';q('[name="email"]').value='two@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();
- assert.equal(q('#refresh-cloud'),null);assert.doesNotMatch(q('.local-notice').textContent,/定期載入/);
+ assert.equal(q('.local-notice #refresh-cloud'),null);assert.doesNotMatch(q('.local-notice').textContent,/定期載入/);
  w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');assert.equal(q('[name="person"]').value,'糖糖');await click('.close');
  w.location.hash='health';w.dispatchEvent(new w.Event('hashchange'));await tick();assert.equal(q('#health-person').value,'糖糖');
  w.location.hash='calendar';w.dispatchEvent(new w.Event('hashchange'));await tick();assert.equal(w.location.hash,'#home');assert.equal(q('#holiday'),null);

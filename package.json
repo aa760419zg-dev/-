@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "check": "node --check public/activity-store.js && node --check public/record-calendar.js && node --check public/record-calendar-ui.js && node --check public/app.js && node --check public/pet-manager.js && node --check public/pets-model.js && node --check public/mutations.js && node --check public/realtime.js && node --check public/members.js && node --check public/activity.js && node --check public/activity-ui.js && node --check server.js",
+    "check": "node --check public/mobile-ui.js && node --check public/activity-store.js && node --check public/record-calendar.js && node --check public/record-calendar-ui.js && node --check public/app.js && node --check public/pet-manager.js && node --check public/pets-model.js && node --check public/mutations.js && node --check public/realtime.js && node --check public/members.js && node --check public/activity.js && node --check public/activity-ui.js && node --check server.js",
     "build": "node scripts/build.js",
     "prestart": "npm run build"
   },
