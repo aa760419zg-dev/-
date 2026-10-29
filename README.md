@@ -95,9 +95,13 @@ npm start
 
 未來私人行程的操作紀錄會依 before/after 的 visibility 與 ownerId 過濾，非本人不顯示；連動快照或匯入若包含他人的私人行程也不顯示。這是操作紀錄 UI 的前置過濾，單一家庭 JSON 仍可由家庭成員讀取，並非完整私人資料授權方案。
 
-## 雲端歷史版本（已執行）
+## 雲端歷史版本 v2（需執行升級）
 
-需在 Supabase 執行 `supabase/history.sql`（已執行，由使用者確認）。此檔逐字保留提供的 SQL。觸發器在文件實際變更時備份上一版，每戶保留最後 200 版；App 的 authenticated/anon 角色無法直接查閱。相同文件只增加 revision 時不備份，符合該 SQL 的 `old.document is distinct from new.document` 條件。
+先前 v1 已由使用者確認執行；目前檔案已改為使用者提供的 v2 SQL，尚未確認在雲端執行。需在 Supabase SQL Editor 執行更新後的 `supabase/history.sql`，只更新 GitHub／部署 App 不會升級資料庫。
+
+v2 在排除 `activity` 後的資料實際變更時備份上一版，每戶保留最後 200 版。新歷史不含操作紀錄；升級也會移除既有歷史中的 `activity`，但保留版本及其他資料，且不修改目前家庭文件的 `activity`。若仍需舊歷史的操作紀錄，升級前請另存備份。只有操作紀錄變更或只增加 revision 時不產生歷史，因此歷史 revision 可以不連號。App 的 authenticated/anon 角色無法直接查閱。
+
+此調整減少歷史表的重複內容，不會解除目前家庭文件 5 MB 的限制。
 
 以下僅在 Supabase SQL Editor 以後台管理權限救援。先查詢，確認家庭與版本，再執行還原；不要將管理憑證放到 App。還原會遞增目前 revision，原來的目前文件也會由觸發器備份。
 
@@ -115,7 +119,8 @@ select id from public.family_homes
 where id = '00000000-0000-0000-0000-000000000000'::uuid
 for update;
 update public.family_homes as h
-set document = history.document,
+set document = (history.document - 'activity')
+    || jsonb_build_object('activity', coalesce(h.document->'activity', '[]'::jsonb)),
     revision = h.revision + 1
 from public.family_document_history as history
 where h.id = '00000000-0000-0000-0000-000000000000'::uuid
@@ -124,6 +129,6 @@ where h.id = '00000000-0000-0000-0000-000000000000'::uuid
 commit;
 ```
 
-後台救援是整份文件回復，包含當時的 activity 與 members；請在還原前確認目標內容，並讓兩支手機關閉編輯、重新載入。此方式不經 App 的活動紀錄機制，僅供後台救援。正常使用一律從 App 還原。
+後台救援回復歷史業務資料與 members，但保留救援前目前的 activity（若沒有則使用空陣列）；操作紀錄不代表被救回版本當時的狀態。請在還原前確認目標內容，並讓兩支手機關閉編輯、重新載入。此方式不經 App 的活動紀錄機制，僅供後台救援。正常使用一律從 App 還原。
 
 PNG 圖示已改為不透明 RGB、四角滿版 #315c4c，讓 iOS 自行裁切；scripts/generate-icons.py 也同步更新。
