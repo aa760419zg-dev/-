@@ -19,7 +19,7 @@ export function medicationSlots(data,date,petId){
  return result;
 }
 export function preventiveAlerts(data,date){
- return data.petPreventives.filter(x=>{const days=(new Date(x.next+'T00:00:00Z')-new Date(date+'T00:00:00Z'))/86400000;return Number.isFinite(days)&&days<=7&&!data.petPreventives.some(y=>y.petId===x.petId&&y.item===x.item&&y.date>x.date);}).sort((a,b)=>a.next.localeCompare(b.next));
+ return pendingPreventives(data).filter(x=>{const days=(new Date(x.next+'T00:00:00Z')-new Date(date+'T00:00:00Z'))/86400000;return Number.isFinite(days)&&days<=7;}).sort((a,b)=>a.next.localeCompare(b.next));
 }
 export function recordDose(data,slotId,date,actor){
  const slot=medicationSlots(data,date).find(x=>x.id===slotId);
@@ -33,3 +33,7 @@ export function saveVisit(data,visit){
  if(visit.syncMoney&&Number(visit.cost)>0){const pet=data.petProfiles.find(x=>x.id===visit.petId);const money={id:linked,date:visit.date,kind:'支出',amount:visit.cost,title:(pet?.name||'寵物')+'就診 · '+visit.hospital,category:'寵物醫療',source:visit.source||'共同帳戶',person:visit.person,personUserId:visit.personUserId,note:visit.reason,visitId:visit.id};if(existing<0)data.money.push(money);else data.money[existing]=money;}
  else if(existing>=0)data.money.splice(existing,1);
 }
+
+// Only the latest administration for the same pet/item owns the next reminder.
+export function pendingPreventives(data){return (data.petPreventives||[]).filter((x,i,all)=>x.next&&x.reminderStatus!=='cancelled'&&!all.some((y,j)=>y.petId===x.petId&&y.item.trim()===x.item.trim()&&(y.date>x.date||(y.date===x.date&&j>i))));}
+export function pendingVisits(data){return (data.petVisits||[]).filter(x=>(x.next||x.nextVisit||x.followUp)&&!['completed','cancelled'].includes(x.followUpStatus)&&!(data.petVisits||[]).some(y=>y.followUpOf===x.id));}

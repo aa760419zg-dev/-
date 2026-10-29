@@ -1,3 +1,4 @@
+import {createRecordCalendar} from '../public/record-calendar-ui.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -14,9 +15,9 @@ test('全站 UI：帳本／行程／飲食編輯刪除、5 秒復原、就診連
  const dom=new JSDOM(await readFile(new URL('../public/index.html',import.meta.url),'utf8'),{url:'http://localhost/',runScripts:'outside-only'}),w=dom.window;
  try{
  let stored=model.normalizeNames(model.empty()),revision=1,confirmations=[];
- stored.members=[{userId:'a',name:'阿嘎',color:'#315c4c'},{userId:'b',name:'糖糖',color:'#b97878'}];stored.petProfiles=[{id:'p',name:'小橘',species:'貓',date:model.today()}];
+ const archived=[{id:'archived',date:'2026-10-01',person:'先生',type:'休假',title:'先生休假',note:'保留原樣'}];stored.events=structuredClone(archived);stored.members=[{userId:'a',name:'阿嘎',color:'#315c4c'},{userId:'b',name:'糖糖',color:'#b97878'}];stored.petProfiles=[{id:'p',name:'小橘',species:'貓',date:model.today()}];
  w.structuredClone=structuredClone;w.confirm=message=>{confirmations.push(message);return true;};w.scrollTo=()=>{};w.HTMLDialogElement.prototype.showModal=function(){this.open=true;};w.HTMLDialogElement.prototype.close=function(){this.open=false;};
- Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createPetManager=o=>createPetManager({...o,document:w.document});w.createActivityUI=o=>createActivityUI({...o,document:w.document});
+ w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});Object.assign(w,model,{retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createPetManager=o=>createPetManager({...o,document:w.document});w.createActivityUI=o=>createActivityUI({...o,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:{user:{id:'a'}}}}),onAuthStateChange(){}}};
  w.rpc=async(name,args)=>{if(name==='family_read')return {id:'home',owner:true,revision,document:structuredClone(stored)};if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);return ++revision;}};
  w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();
@@ -24,7 +25,7 @@ test('全站 UI：帳本／行程／飲食編輯刪除、5 秒復原、就診連
  await route('money');await click('[data-add="money"]');fill('amount','100');fill('title','買菜');await submit();const moneyId=stored.money[0].id;assert.equal(stored.activity.length,1);
  await click('[data-edit-record="money"]');fill('amount','200');await submit();assert.equal(stored.money[0].id,moneyId);const editLog=stored.activity.find(e=>e.recordId===moneyId&&e.action==='編輯');assert.equal(editLog.before.amount,'100');assert.equal(editLog.after.amount,'200');
  await click('[data-delete="money"]');assert.equal(stored.money.length,0);assert.match(confirmations.at(-1),/買菜.*200/);assert.equal(q('#undo-toast').hidden,false);await click('#undo-toast button');assert.equal(stored.money.length,1);assert.equal(stored.activity.at(-1).action,'還原');
- await route('calendar');await click('[data-add="events"]');fill('title','家族聚餐');await submit();await click('[data-edit-record="events"]');fill('place','公園');await submit();assert.equal(stored.events[0].place,'公園');await click('[data-delete="events"]');assert.equal(stored.events.length,0);await click('#undo-toast button');assert.equal(stored.events.length,1);
+ await route('calendar');assert.equal(w.location.hash,'#home');assert.equal(q('[data-add="events"]'),null);
  await route('pets/p/diet');await click('[data-pet-action="add-diet"]');fill('title','雞肉罐頭');await submit();await click('[data-pet-action="edit-diet"]');fill('note','食慾正常');await submit();assert.equal(stored.pets[0].note,'食慾正常');await click('[data-pet-action="delete-diet"]');assert.equal(stored.pets.length,0);await click('#undo-toast button');assert.equal(stored.pets.length,1);
  await route('pets/p/visit');await click('[data-pet-action="new-visit"]');fill('hospital','和平動物醫院');fill('cost','1200');q('[name="syncMoney"]').checked=true;await submit('#pet-form');const visit=stored.petVisits[0],linked=stored.money.find(m=>m.visitId===visit.id);assert.ok(linked);assert.equal(stored.activity.filter(e=>e.groupId===stored.activity.at(-1).groupId).length,2);
  await route('money');await click(`[data-edit-record="money"][data-id="${linked.id}"]`);assert.equal(q('#modal').open,false);assert.match(q('#toast').textContent,/就診紀錄修改/);
@@ -35,7 +36,7 @@ test('全站 UI：帳本／行程／飲食編輯刪除、5 秒復原、就診連
  // 匯入只替換業務資料，現有 activity 保留，不採用備份內的歷史。
  const priorIds=stored.activity.map(e=>e.id),incoming=model.empty();incoming.activity=[{id:'foreign-history',at:new Date().toISOString()}];
  await click('#settings');const originalCreate=w.document.createElement.bind(w.document);w.document.createElement=(tag,...args)=>{const element=originalCreate(tag,...args);if(tag==='input')element.click=()=>{Object.defineProperty(element,'files',{value:[{size:100,text:async()=>JSON.stringify(incoming)}]});void element.onchange();};return element;};await click('#import');await tick();w.document.createElement=originalCreate;
- assert.ok(priorIds.every(id=>stored.activity.some(e=>e.id===id)));assert.ok(!stored.activity.some(e=>e.id==='foreign-history'));assert.equal(stored.activity.at(-1).summary,'匯入備份');assert.equal(stored.activity.at(-1).before.activity,undefined);
+ assert.ok(priorIds.every(id=>stored.activity.some(e=>e.id===id)));assert.ok(!stored.activity.some(e=>e.id==='foreign-history'));assert.equal(stored.activity.at(-1).summary,'匯入備份');assert.equal(stored.activity.at(-1).before.activity,undefined);assert.deepEqual(stored.events,archived);
 
  }finally{w.close();}
 });

@@ -6,7 +6,7 @@ test('備份檢查拒絕不相容版本與損壞紀錄',()=>{assert.ok(validData
 
 test('改名後舊紀錄仍歸入同一人，保留原始備註與自訂行程名稱',()=>{
  const d=empty();d.health=[{person:'先生',kind:'運動'}];d.money=[{person:'太太'}];d.events=[{person:'先生',type:'休假',title:'先生休假',note:'太太提醒'},{person:'太太',title:'和太太散步'}];
- const n=normalizeNames(d);assert.equal(n.health[0].person,'阿嘎');assert.equal(n.money[0].person,'糖糖');assert.equal(n.events[0].title,'阿嘎休假');assert.equal(n.events[0].note,'太太提醒');assert.equal(n.events[1].title,'和太太散步');assert.equal(d.health[0].person,'先生');assert.deepEqual(normalizeNames(n),n);
+ const n=normalizeNames(d);assert.equal(n.health[0].person,'阿嘎');assert.equal(n.money[0].person,'糖糖');assert.deepEqual(n.events,d.events);assert.equal(n.events[0].note,'太太提醒');assert.equal(n.events[1].title,'和太太散步');assert.equal(d.health[0].person,'先生');assert.deepEqual(normalizeNames(n),n);
 });
 
 test('運動月統計依成員與月份隔離，同日多筆只算一天且不混加總熱量',()=>{

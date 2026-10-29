@@ -5,15 +5,14 @@ export function expense(data,month){return data.money.filter(x=>x.kind==='支出
 export const empty=()=>({version:1,activity:[],opening:0,threshold:3000,money:[],events:[],pets:[],chores:[],health:[]});
 export function validData(d){return d&&d.version===1&&Number.isFinite(d.opening)&&Number.isFinite(d.threshold)&&['money','events','pets','chores','health'].every(k=>Array.isArray(d[k])&&d[k].every(x=>x&&typeof x==='object'&&typeof x.id==='string'&&typeof x.date==='string'))&&(d.activity===undefined||(Array.isArray(d.activity)&&d.activity.every(e=>e&&typeof e.id==='string'&&typeof e.at==='string')))&&(d.members===undefined||(Array.isArray(d.members)&&d.members.every(m=>m&&typeof m.userId==='string'&&typeof m.name==='string'&&/^#[0-9a-f]{6}$/i.test(m.color))))&&petCollections.every(k=>d[k]===undefined||(Array.isArray(d[k])&&d[k].every(x=>x&&typeof x.id==='string'&&typeof x.date==='string')));}
 
-// 舊稱呼相容：只轉換成員欄位與系統產生的休假標題，不更動備註。
+// 舊稱呼相容：保留封存的 events 原樣，只轉換使用中的成員欄位。
 export function normalizeNames(document){
  const copy=structuredClone(document);if(!Array.isArray(copy.activity))copy.activity=[];
  const names={'我':'阿嘎','先生':'阿嘎','太太':'糖糖'};
- for(const kind of ['money','events','health'])for(const record of copy[kind]){
+ for(const kind of ['money','health'])for(const record of copy[kind]){
   const old=record.person;
   if(Object.hasOwn(names,old)){
    record.person=names[old];
-   if(kind==='events'&&record.type==='休假'&&record.title===old+'休假')record.title=record.person+'休假';
   }
  }
  return hydratePets(copy);

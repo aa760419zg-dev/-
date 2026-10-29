@@ -37,7 +37,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
  let changes=changesBetween(before,data);
  if(importing)changes=[{collection:'document',id:'backup',before:snapshot(before),after:snapshot(data)}];
  if(!changes.length)return [];
- const root=changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
+ const root=changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.before)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
  const rootId=id+':'+root.collection+':'+root.id;
  const logs=changes.map(c=>{
   let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='petDoses'?'完成':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
@@ -58,7 +58,7 @@ export function deleteRecord(data,collection,id){
   for(const key of ['petWeights','petMedications','petDoses','petVisits','petPreventives','pets'])data[key]=(data[key]||[]).filter(x=>{const related=x.petId===id||(key==='pets'&&!x.petId&&x.pet===record.name);if(related&&key==='petVisits')visits.add(x.id);if(related&&key==='petMedications')plans.add(x.id);return !related;});
  }
  if(collection==='petMedications')plans.add(id);
- if(collection==='petVisits')visits.add(id);
+ if(collection==='petVisits'){visits.add(id);for(const source of data.petVisits)if(source.followUpVisitId===id){source.followUpStatus='pending';delete source.followUpVisitId;}}
  if(plans.size)data.petDoses=(data.petDoses||[]).filter(x=>!plans.has(x.planId));
  if(visits.size)data.money=data.money.filter(x=>!visits.has(x.visitId)&&![...visits].some(v=>x.id==='pet-visit-'+v));
  data[collection]=data[collection].filter(x=>recordKey(collection,x)!==id);
@@ -73,8 +73,10 @@ export function visibleActivity(entry,userId){
 export function rootEntry(data,id){const entry=data.activity?.find(x=>x.id===id);if(!entry)return null;return data.activity.find(x=>x.id===(entry.rootId||entry.id))||entry;}
 export function currentFor(data,change){if(change.collection==='settings')return {opening:data.opening,threshold:data.threshold};if(change.collection==='document')return snapshot(data);return clone((data[change.collection]||[]).find(x=>recordKey(change.collection,x)===change.id));}
 export function restoreState(data,entry){return (entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}]).map(c=>currentFor(data,c));}
+export function archivedActivity(entry){return entry?.collection==='events'||entry?.changes?.some(c=>c.collection==='events');}
 export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true}={}){
  const entry=rootEntry(data,id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
+ if(archivedActivity(entry))throw Error('舊行程已封存，僅供查看，不支援還原');
  if(!['刪除','編輯'].includes(entry.action))throw Error('此操作不支援還原');
  const changes=entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}],current=changes.map(c=>currentFor(data,c));
  if(changes.every((c,i)=>equal(current[i],c.before)))return false;
@@ -83,7 +85,7 @@ export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true}={}){
  for(const change of changes){
   if(!Object.hasOwn(areas,change.collection)&&!['settings','document'].includes(change.collection))throw Error('不支援還原這個資料類型');const target=clone(change.before);
   if(change.collection==='settings'){data.opening=target.opening;data.threshold=target.threshold;continue;}
-  if(change.collection==='document'){const activity=data.activity;for(const k of Object.keys(data))if(k!=='activity')delete data[k];Object.assign(data,target);data.activity=activity;continue;}
+  if(change.collection==='document'){const activity=data.activity,events=clone(data.events);for(const k of Object.keys(data))if(k!=='activity')delete data[k];Object.assign(data,target);data.activity=activity;data.events=events;continue;}
   const list=data[change.collection]??=[];const index=list.findIndex(x=>recordKey(change.collection,x)===change.id);
   if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.splice(Number.isInteger(change.beforeIndex)?Math.min(change.beforeIndex,list.length):list.length,0,target);
  }

@@ -25,7 +25,7 @@ test('就診及用藥計畫刪除連動還原；不會重複加入同 id',()=>{
  d.petMedications=[{id:'plan',petId:'p',date:'2026-10-28'}];d.petDoses=[{id:'dose',planId:'plan',petId:'p',date:'2026-10-28'}];audited(d,()=>deleteRecord(d,'petMedications','plan'),'delete-plan');assert.equal(d.petDoses.length,0);restoreActivity(d,d.activity.at(-1).id,'a',{confirm:()=>true});assert.equal(d.petDoses.length,1);
 });
 test('還原較新資料要警告，拒絕時不改資料；私人行程及差異過濾',()=>{
- const d=fixture();d.events=[{id:'e',date:'2026-10-28',title:'舊行程'}];audited(d,()=>d.events.find(x=>x.id==='e').title='新版','edit');const id=d.activity[0].id;d.events[0].title='更新版';let message='';assert.equal(restoreActivity(d,id,'a',{confirm:m=>{message=m;return false;}}),false);assert.match(message,/此紀錄之後已有修改/);assert.equal(d.events[0].title,'更新版');restoreActivity(d,id,'a',{confirm:()=>true});assert.equal(d.events[0].title,'舊行程');
+ const d=fixture();d.money=[{id:'e',date:'2026-10-28',title:'原用途'}];audited(d,()=>d.money.find(x=>x.id==='e').title='新版','edit');const id=d.activity[0].id;d.money[0].title='更新版';let message='';assert.equal(restoreActivity(d,id,'a',{confirm:m=>{message=m;return false;}}),false);assert.match(message,/此紀錄之後已有修改/);assert.equal(d.money[0].title,'更新版');restoreActivity(d,id,'a',{confirm:()=>true});assert.equal(d.money[0].title,'原用途');
  assert.equal(visibleActivity({area:'行程',before:{visibility:'private',ownerId:'b'}},'a'),false);assert.equal(visibleActivity({area:'行程',after:{visibility:'private',ownerId:'a'}},'a'),true);assert.deepEqual(changedFields({name:'a',note:'same'},{name:'b',note:'same'}),[{field:'name',before:'a',after:'b'}]);
 });
 test('活動保留同時符合最近十二個月及最多兩千筆，匯入保留原歷史且不遞迴快照',()=>{
