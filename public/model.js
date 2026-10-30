@@ -1,3 +1,4 @@
+export {formatDate,formatDateTime,formatDatesInText} from './dates.js';
 import {hydratePets,petCollections} from './pets-model.js';
 export const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
 export function balance(data){return Number(data.opening||0)+data.money.reduce((sum,x)=>sum+(x.kind==='存入'?Number(x.amount):x.source==='共同帳戶'?-Number(x.amount):0),0);}
@@ -38,11 +39,13 @@ export function choreRule(chore){
  if(chore.cadence==='每月')return {unit:'個月',every:1};
  return {unit:'天',every:Number(chore.interval||1)};
 }
+export const choreIcons=[['💧','濾心',['濾心','濾芯']],['🌬','冷氣',['冷氣','空調']],['🛏','床單',['床單','被單','床被']],['🪴','澆花',['澆花','植物']],['🧹','掃地',['掃地','拖地']],['🐈','貓砂',['貓砂']],['🗑','垃圾',['垃圾']],['🧺','洗衣',['洗衣','衣服']]];
+export function choreIcon(value){if(value&&typeof value==='object'&&choreIcons.some(([icon])=>icon===value.icon))return value.icon;const name=typeof value==='string'?value:value?.title||'';return choreIcons.find(([,label,words])=>words.some(word=>name.includes(word)))?.[0]||'🧹';}
 export function choreScheduleMode(chore){return ['completion','fixed'].includes(chore.scheduleMode)?chore.scheduleMode:choreRule(chore).unit==='週'?'fixed':'completion';}
 export function migrateChores(data){for(const chore of data.chores)if(!['completion','fixed'].includes(chore.scheduleMode))chore.scheduleMode=choreScheduleMode(chore);}
 export function choreCompletion(data,entry){const date=typeof entry==='string'?entry:entry?.date;const member=typeof entry==='object'?data.members?.find(m=>m.userId===entry.userId):null;return {date:date||'',name:member?.name||'未知',member};}
 export function completeChore(data,id,date,userId,expectedNext){const chore=data.chores.find(c=>c.id===id),member=data.members.find(m=>m.userId===userId);if(!chore)throw Error('家務已被刪除');if(!member)throw Error('找不到目前成員');if(expectedNext&&(typeof expectedNext==='string'?chore.next!==expectedNext:chore.next!==expectedNext.next||chore.date!==expectedNext.date||(chore.history||[]).length!==expectedNext.count))throw Error('這次家務已更新或完成，已顯示最新安排');chore.scheduleMode=choreScheduleMode(chore);chore.anchor=chore.anchor||chore.next;chore.next=nextChoreDate(chore,date);chore.date=date;chore.history=[...(chore.history||[]),{date,userId:member.userId,name:member.name}];}
-export function commonChores(date,ids){return [['淨水器濾心',90],['冷氣濾網清洗',30],['床單更換',14],['澆花',3],['掃地拖地',7],['清貓砂',1]].map(([title,every],i)=>{const chore={id:ids[i],title,date:'',history:[],repeatEvery:every,repeatUnit:'天',scheduleMode:'completion',cadence:'每日',next:date,anchor:date,pinned:false,remindDays:3,note:''};chore.next=nextChoreDate(chore,date);return chore;});}
+export function commonChores(date,ids){return [['淨水器濾心',90],['冷氣濾網清洗',30],['床單更換',14],['澆花',3],['掃地拖地',7],['清貓砂',1]].map(([title,every],i)=>{const chore={id:ids[i],title,icon:choreIcon(title),date:'',history:[],repeatEvery:every,repeatUnit:'天',scheduleMode:'completion',cadence:'每日',next:date,anchor:date,pinned:false,remindDays:3,note:''};chore.next=nextChoreDate(chore,date);return chore;});}
 export function nextChoreDate(chore,completed=today()){
  let next=chore.next;
  if(choreScheduleMode(chore)==='completion'){const d=utcDay(completed),{unit,every}=choreRule(chore);if(!Number.isFinite(d.getTime())||!Number.isInteger(every)||every<1)throw Error('家務排程日期或週期不正確');if(unit==='個月'){const day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+every);d.setUTCDate(Math.min(day,new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate()));}else d.setUTCDate(d.getUTCDate()+every*(unit==='週'?7:1));return isoDay(d);}
