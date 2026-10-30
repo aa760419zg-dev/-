@@ -1,3 +1,5 @@
+import {icon,illustration} from '../public/icons.js';
+import {completionFeedback} from '../public/feedback.js';
 import {createLedgerUI} from '../public/ledger-ui.js';
 import {migrateLedger,materializeRecurring} from '../public/ledger-model.js';
 import {createMobileUI} from '../public/mobile-ui.js';
@@ -26,7 +28,7 @@ test('全站 UI：帳本／行程／飲食編輯刪除、5 秒復原、就診連
  w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});w.createMobileUI=o=>createMobileUI({...o,document:w.document});w.createLedgerUI=o=>createLedgerUI({...o,document:w.document});Object.assign(w,model,{migrateLedger,materializeRecurring,createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createPetManager=o=>createPetManager({...o,document:w.document});w.createActivityUI=o=>createActivityUI({...o,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:{user:{id:'a'}}}}),onAuthStateChange(){}}};
  migrateLedger(stored);w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read')return {id:'home',owner:true,revision,document:structuredClone(stored)};if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++revision;}};
- w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();
+ Object.assign(w,{icon,illustration,completionFeedback});w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();
  const q=s=>w.document.querySelector(s),click=async s=>{assert.ok(q(s),s);q(s).click();await tick();},route=async hash=>{w.location.hash=hash;w.dispatchEvent(new w.Event('hashchange'));await tick();},fill=(n,v)=>{(q(`[name="${n}"]`)||(n==='title'?q('#ledger-note'):null)).value=v;},submit=async(selector='#form')=>{q(selector).dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();};
  await route('money');await click('[data-add="money"]');fill('amount','100');fill('title','買菜');await submit();const moneyId=stored.money[0].id;assert.equal(logs.length,1);
  await click('[data-edit-record="money"]');fill('amount','200');await submit();assert.equal(stored.money[0].id,moneyId);const editLog=logs.find(e=>e.recordId===moneyId&&e.action==='編輯');assert.equal(editLog.before.amount,100);assert.equal(editLog.after.amount,200);
