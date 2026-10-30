@@ -14,7 +14,7 @@ export function createActivityUI({getData,getUserId,mutate,render,toast,activity
  const ok=await mutate(()=>{if(getUserId()!==actor)throw Error('登入狀態已改變');const d=getData(),state=restoreState(d,original);const needsAsk=ask&&confirmed===null||confirmed!==null&&!equal(state,confirmed);changed=restoreActivity(d,original.id,actor,{entries:[original,...newer],ask:needsAsk,confirm:message=>{const answer=win.confirm(formatDatesInText(message));if(answer)confirmed=structuredClone(state);return answer;}});},{action:'還原',summary:'還原：'+original.summary,restoreOf:original.id,prepare:async()=>{newer=await activity.newer(original);}});
  if(ok){invalidate();toast(changed?'還原好了，相關紀錄也一起更新了':'內容已經還原，或這次已取消，沒有另外加入紀錄');}
  }catch(e){toast(e.message);}}
- function showUndo(id,label='已刪除・'){win.clearTimeout(timer);undo.replaceChildren();const text=doc.createElement('span');text.textContent=label;const button=doc.createElement('button');button.textContent='復原';button.type='button';button.onclick=()=>{undo.hidden=true;void restore(id,false);};undo.append(text,button);undo.hidden=false;timer=win.setTimeout(()=>{undo.hidden=true;},5000);}
+ function showUndo(id,label='已刪除・',customRestore=null){win.clearTimeout(timer);undo.replaceChildren();const text=doc.createElement('span');text.textContent=label;const button=doc.createElement('button');button.textContent='復原';button.type='button';button.onclick=()=>{undo.hidden=true;void (customRestore?customRestore():restore(id,false));};undo.append(text,button);undo.hidden=false;timer=win.setTimeout(()=>{undo.hidden=true;},5000);}
  function deletionPreview(d,collection,id){const before=snapshot(d),after=structuredClone(before);deleteRecord(after,collection,id);return changesBetween(before,after);}
  function deletionPrompt(d,collection,id,changes){
   const record=d[collection].find(x=>x.id===id),areaName=areaFor({collection,before:record});let counts='';
@@ -34,5 +34,8 @@ export function createActivityUI({getData,getUserId,mutate,render,toast,activity
  doc.addEventListener('change',e=>{if(e.target.id==='audit-member'){member=e.target.value;invalidate();render();}if(e.target.id==='audit-area'){area=e.target.value;invalidate();render();}});
  win.addEventListener('scroll',()=>{const target=doc.querySelector('.audit-sentinel');if(target&&target.getBoundingClientRect().top<win.innerHeight+200&&!error)void load();},{passive:true});
  function offerUndo(groupId,label){const root=activity.last().find(e=>e.groupId===groupId&&e.id===e.rootId);if(root){undoEntries.clear();undoEntries.set(root.id,structuredClone(root));showUndo(root.id,label);}}
- undo.hidden=true;return {page,remove,restore,invalidate,offerUndo,clear(){invalidate();undoEntries.clear();undo.hidden=true;member='';area='';expanded='';win.clearTimeout(timer);}};
+ // The home note offers a short undo for its dose checkbox, without changing
+ // the medication page or the historical restore permissions.
+ function offerDoseUndo(id,groupId){const original=structuredClone(getData().petDoses.find(r=>r.id===id));if(!original)return;const restoreOf=activity.last().find(e=>e.groupId===groupId&&e.recordId===id)?.id;showUndo(id,'已餵藥・',async()=>{try{const actor=getUserId();await mutate(()=>{if(getUserId()!==actor)throw Error('登入狀態已改變');const latest=getData().petDoses.find(r=>r.id===id);if(!latest)return;if(!equal(latest,original))throw Error('這筆餵藥紀錄已變更，請到寵物頁確認');deleteRecord(getData(),'petDoses',id);},{action:'還原',summary:'還原餵藥：'+original.drug,restoreOf});}catch(error){toast(error.message);}});}
+ undo.hidden=true;return {page,remove,restore,invalidate,offerUndo,offerDoseUndo,clear(){invalidate();undoEntries.clear();undo.hidden=true;member='';area='';expanded='';win.clearTimeout(timer);}};
 }

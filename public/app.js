@@ -17,7 +17,7 @@ const $=s=>document.querySelector(s), key='our-home-v1';
 let data=empty(),session=null,cloudHome=null,loading=true,busy=false,authBusy=false,loadedUserId=null,syncState='syncing';
 const activityStore=createActivityStore({rpc,getHome:()=>cloudHome});
 let pendingActivity=[];
-const petManager=createPetManager({getData:()=>data,getHome:()=>cloudHome,getSession:()=>session,mutate,refresh:loadHome,render,openLegacy:open,today,toast,client,activity:activityStore,getMember:currentMember,removeRecord:(collection,id)=>activityUI.remove(collection,id)});
+const petManager=createPetManager({getData:()=>data,getHome:()=>cloudHome,getSession:()=>session,mutate,refresh:loadHome,render,openLegacy:open,today,toast,client,activity:activityStore,offerDoseUndo:(id,groupId)=>activityUI.offerDoseUndo(id,groupId),getMember:currentMember,removeRecord:(collection,id)=>activityUI.remove(collection,id)});
 const activityUI=createActivityUI({getData:()=>data,getUserId:()=>session?.user.id,mutate,render,toast,activity:activityStore});
 const ledgerUI=createLedgerUI({getData:()=>data,getMember:currentMember,getHomeId:()=>cloudHome?.id,mutate,removeRecord:(collection,id)=>activityUI.remove(collection,id),calculateAmount,today,toast});
 const pages=[['home','home','首頁總覽'],['money','money','家庭帳本'],['pets','pets','寵物日記'],['chores','chores','家務排程'],['health','health','運動健康']];
