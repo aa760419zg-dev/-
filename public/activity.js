@@ -1,4 +1,4 @@
-export const areas={money:'帳本',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
+export const areas={money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
 const clone=value=>value==null?null:structuredClone(value);
 export function equal(a,b){
  if(a===b)return true;if(a==null||b==null||typeof a!=='object'||typeof b!=='object')return false;
@@ -20,7 +20,7 @@ export function areaFor(change){const r=change.after||change.before;return chang
 export function describe(data,collection,record){
  if(!record)return '';
  const pet=data.petProfiles?.find(p=>p.id===record.petId)?.name||record.pet||'';const person=data.members?.find(m=>m.userId===record.personUserId)?.name||record.person;
- if(collection==='petProfiles')return record.name;
+ if(collection==='petProfiles'||collection==='categories')return record.name;if(collection==='recurring')return [record.template?.note||record.template?.title||record.template?.category,'NT$'+Number(record.template?.amount||0).toLocaleString('zh-TW')].join(' · ');
  if(collection==='money')return [record.date,record.title||record.category,'NT$'+Number(record.amount||0).toLocaleString('zh-TW')].filter(Boolean).join(' · ');
  if(collection==='health')return [record.date,person,record.kind==='InBody'?'InBody · '+record.weight+' kg':record.title+' · '+record.minutes+' 分鐘'].filter(Boolean).join(' · ');
  if(collection==='settings')return '共同帳戶餘額與提醒設定';
@@ -28,9 +28,10 @@ export function describe(data,collection,record){
  return [pet,record.date,record.title||record.drug||record.item||record.name||(collection==='petWeights'?record.weight+' kg':collection==='members'?record.name:'帳戶設定')].filter(Boolean).join(' · ');
 }
 // 在 mutate 的可重試 callback 中呼叫，與資料一起交給 family_save。
-export function appendActivity(data,before,{id,at,userId,action,summary,restoreOf,importing=false}){
+export function appendActivity(data,before,{id,at,userId,action,summary,restoreOf,importing=false,ledgerMigration=false}){
  const member=before.members?.find(x=>x.userId===userId)||data.members?.find(x=>x.userId===userId);if(!member)throw Error('找不到操作者成員身分');
  let changes=changesBetween(before,data);
+ if(ledgerMigration){if(equal(before,data))return [];changes=[{collection:'document',id:'finance-migration',before:snapshot(before),after:snapshot(data)}];}
  if(importing)changes=[{collection:'document',id:'backup',before:snapshot(before),after:snapshot(data)}];
  if(!changes.length)return [];
  const root=changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.before)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
@@ -39,12 +40,13 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
   let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='petDoses'?'完成':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
   if(c.collection==='petDoses'&&!c.before&&!action)verb='完成';
   const entry={id:id+':'+c.collection+':'+c.id,at,userId,name:member.name,action:verb,area:areaFor(c),recordId:c.id,summary:summary||`${verb}${areaFor(c)}：${describe(c.after?data:before,c.collection,c.after||c.before)}`,before:clone(c.before),after:clone(c.after),collection:c.collection,beforeIndex:c.beforeIndex,groupId:id,rootId};
+  if(ledgerMigration){entry.summary='升級記帳分類與帳戶';entry.area='帳本';entry.systemMigration=true;}
   if(importing){entry.summary='匯入備份';entry.area='帳戶設定';entry.action='編輯';}
   if(restoreOf)entry.restores=restoreOf;
   if(entry.id===rootId){if(changes.length>1||(c.collection==='petProfiles'&&!c.after))entry.changes=clone(changes);if(c.collection==='petProfiles'&&!c.after){const bundle={pet:clone(c.before)};for(const other of changes)if(other!==c&&other.before&&!other.after)(bundle[other.collection]??=[]).push(clone(other.before));entry.before=bundle;}}
   return entry;
  });
- logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));return logs;
+ logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));return logs.length>100?logs.filter(e=>e.id===rootId):logs;
 }
 export function deleteRecord(data,collection,id){
  const record=(data[collection]||[]).find(x=>recordKey(collection,x)===id);if(!record)throw Error('紀錄已被刪除');
@@ -71,11 +73,12 @@ export function restoreState(data,entry){return (entry.changes||[{collection:ent
 export function archivedActivity(entry){return entry?.collection==='events'||entry?.changes?.some(c=>c.collection==='events');}
 export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entries=data.activity||[]}={}){
  const entry=rootEntry({activity:entries},id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
+ if(entry.systemMigration)throw Error('資料升級紀錄僅供查看');
  if(archivedActivity(entry))throw Error('舊行程已封存，僅供查看，不支援還原');
  if(!['刪除','編輯'].includes(entry.action)&&!(entry.action==='完成'&&entry.collection==='chores'))throw Error('此操作不支援還原');
  const changes=entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}],current=changes.map(c=>currentFor(data,c));
  if(changes.every((c,i)=>equal(current[i],c.before)))return false;
- const position=entries.findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||entries.slice(position+1).some(e=>e.groupId!==entry.groupId&&(e.collection==='document'||changes.some(c=>c.collection===e.collection&&c.id===e.recordId)));
+ const position=entries.findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||entries.slice(position+1).some(e=>e.groupId!==entry.groupId&&(e.collection==='document'||changes.some(c=>c.collection===e.collection&&c.id===e.recordId||e.changes?.some(other=>other.collection===c.collection&&other.id===c.id))));
  if((ask||newer)&&!confirm((newer?'此紀錄之後已有修改，還原會覆蓋較新的內容。\n':'')+'確定還原「'+entry.summary+'」及其連動紀錄？'))return false;
  for(const change of changes){
   if(!Object.hasOwn(areas,change.collection)&&!['settings','document'].includes(change.collection))throw Error('不支援還原這個資料類型');const target=clone(change.before);

@@ -1,3 +1,4 @@
+import {petMedicalCategory} from './ledger-model.js';
 export const petCollections=['petProfiles','petWeights','petMedications','petDoses','petVisits','petPreventives'];
 export function hydratePets(data){
  for(const k of petCollections)if(!Array.isArray(data[k]))data[k]=[];
@@ -32,7 +33,7 @@ export function recordDose(data,slotId,date,actor){
 export function saveVisit(data,visit){
  const index=data.petVisits.findIndex(x=>x.id===visit.id);if(index<0)data.petVisits.push(visit);else data.petVisits[index]=visit;
  const linked='pet-visit-'+visit.id,existing=data.money.findIndex(x=>x.id===linked);
- if(visit.syncMoney&&Number(visit.cost)>0){const pet=data.petProfiles.find(x=>x.id===visit.petId);const money={id:linked,date:visit.date,kind:'支出',amount:visit.cost,title:(pet?.name||'寵物')+'就診 · '+visit.hospital,category:'寵物醫療',source:visit.source||'共同帳戶',person:visit.person,personUserId:visit.personUserId,note:visit.reason,visitId:visit.id};if(existing<0)data.money.push(money);else data.money[existing]=money;}
+ if(visit.syncMoney&&Number(visit.cost)>0){const pet=data.petProfiles.find(x=>x.id===visit.petId);const classification=petMedicalCategory(data);const money={id:linked,date:visit.date,kind:'支出',amount:visit.cost,title:(pet?.name||'寵物')+'就診 · '+visit.hospital,category:classification?.root.name||'寵物醫療',...(classification?{categoryId:classification.root.id,subcategoryId:classification.sub?.id||null,subcategory:classification.sub?.name||''}:{}),account:visit.source==='個人支付'?visit.personUserId||'':'共同帳戶',source:visit.source||'共同帳戶',person:visit.person,personUserId:visit.personUserId,note:visit.reason,visitId:visit.id};if(existing<0)data.money.push(money);else data.money[existing]=money;}
  else if(existing>=0)data.money.splice(existing,1);
 }
 
