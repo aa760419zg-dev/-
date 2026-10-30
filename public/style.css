@@ -156,3 +156,36 @@ aside{overflow-y:auto}.record-day.selected{border-color:var(--accent)}
 @media(max-width:759px){.exercise-stats{gap:5px;padding:15px 8px}.exercise-stats strong{font-size:16px;white-space:nowrap}.exercise-stats small{font-size:10px}.exercise-calendar .day{min-height:60px}.audit-list{padding:14px}.audit-row{gap:8px}.color-swatches{gap:7px}.color-swatch{width:27px;height:27px}.health-members{gap:6px}.member-pill{min-height:40px}.pet-hero{padding-top:8px}}
 
 .custom-color>i{width:10px;height:10px;flex:none;border-radius:50%;border:1px solid var(--line)}
+
+/* Home reference layout: roomy calendar on the left, today and selected day on the right. */
+.home-dashboard .record-search-toggle{display:inline-flex;align-items:center;justify-content:center;padding:7px;min-width:36px;min-height:36px}
+@media(min-width:760px){
+ .home-dashboard{padding-top:12px}
+ .home-dashboard>.page-heading{display:none}
+ .home-dashboard .record-layout{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(280px,1fr);grid-template-areas:"month todos" "month selected";grid-template-rows:auto 1fr;gap:12px 18px;align-items:start}
+ .home-dashboard .record-month{grid-area:month;padding:16px 14px 12px}
+ .home-dashboard .home-todos{grid-area:todos;margin:0;min-width:0}
+ .home-dashboard .record-list{grid-area:selected;padding:20px;min-width:0}
+ .home-dashboard .record-layout:has(>.home-todos:empty) .record-list{grid-row:1 / -1}
+ .home-dashboard .record-month-nav{gap:8px;position:relative;padding-right:36px;min-height:44px}
+ .home-dashboard .record-search-toggle{position:absolute;right:0;border:0;background:var(--transparent);color:var(--muted)}
+ .home-dashboard .record-month-nav h2{font-size:22px}
+ .home-dashboard .record-summary{font-size:12px;margin:8px 0 10px}
+ .home-dashboard .record-day{height:66px;min-height:66px}
+ .home-dashboard .record-day.selected{background:var(--accent-soft);border-color:var(--accent)}
+ .home-dashboard .record-group h3{font-size:14px;margin:0 0 10px;padding-bottom:10px}
+ .home-dashboard .record-group{margin-top:18px;padding-top:18px}
+ .home-dashboard .record-list>.section-title{margin-bottom:14px}
+ .home-dashboard .record-list>.section-title h2{font-size:16px}
+ .home-dashboard .record-list #record-add{font-size:12px;padding:6px 8px}
+ .home-dashboard .record-item{font-size:13px;padding:13px 0}
+ .home-dashboard .home-activity{margin-top:24px}
+}
+@media(min-width:760px) and (max-width:1050px){
+ .home-dashboard .record-layout{grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:12px}
+ .home-dashboard .record-month-nav{gap:3px;padding-right:28px}
+ .home-dashboard .record-month-nav h2{font-size:17px}
+ .home-dashboard .record-month-nav .subtle{padding:6px;min-width:28px}
+ .home-dashboard .record-month-nav .app-icon{width:20px;height:20px}
+ .home-dashboard .record-list{padding:14px}
+}
