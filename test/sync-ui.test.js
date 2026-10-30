@@ -32,9 +32,10 @@ test('UI：Broadcast 在編輯時延後，關閉後載入；回前景立即同�
  w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();await tick();
  const q=s=>w.document.querySelector(s),click=async s=>{q(s).click();await tick();};
  await click('#record-add');await click('[data-record-add="money"]');q('#ledger-note').value='未送出的草稿';const before=reads;
+ logs.push({id:'remote-activity',recordId:'remote',at:new Date().toISOString(),userId:'b',collection:'money',area:'帳本',action:'新增',after:{note:'糖糖新增',amount:10}});
  stored.money.push({id:'remote',date:model.today(),kind:'支出',amount:'10',title:'糖糖新增',category:'其他',source:'共同帳戶'});revision++;
  await listener({payload:{revision}});await tick();assert.equal(reads,before);assert.equal(q('#ledger-note').value,'未送出的草稿');
- await click('.close');assert.ok(reads>before);assert.match(q('#view').textContent,/糖糖新增/);
+ await click('.close');assert.ok(reads>before);assert.match(q('#view').textContent,/糖糖新增/);assert.match(q('.home-activity').textContent,/糖糖.*記了一筆糖糖新增 NT\$10/);
  let loaded=reads;visible='hidden';revision++;stored.money[0].title='回到前景可看見';await listener({payload:{revision}});assert.equal(reads,loaded);
  visible='visible';w.document.dispatchEvent(new w.Event('visibilitychange'));await tick();assert.ok(reads>loaded);assert.match(q('#view').textContent,/回到前景可看見/);
  assert.deepEqual(intervals.map(i=>i.delay),[60000]);loaded=reads;await intervals[0].fn();await tick();assert.ok(reads>loaded);
