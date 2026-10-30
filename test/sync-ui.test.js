@@ -1,3 +1,4 @@
+import {createNavigationGuard} from '../public/navigation.js';
 import {icon,illustration} from '../public/icons.js';
 import {completionFeedback} from '../public/feedback.js';
 import {createLedgerUI} from '../public/ledger-ui.js';
@@ -31,7 +32,7 @@ test('UI：Broadcast 在編輯時延後，關閉後載入；回前景立即同�
  const channel={on(type,filter,fn){listener=fn;return this;},subscribe(fn){fn('SUBSCRIBED');},send:async msg=>{sent.push(msg);return 'ok';}};
  w.client={channel:()=>channel,removeChannel(){},auth:{getSession:async()=>({data:{session:{user:{id:'a',email:'a@example.com'}}}}),onAuthStateChange(){}}};
  migrateLedger(stored);w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read'){reads++;if(readGate)await readGate;return {id:'home',document:structuredClone(stored),revision,owner:true};}if(name==='family_save'){assert.equal(args.expected_revision,revision);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++revision;}};
- Object.assign(w,{icon,illustration,completionFeedback});w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();await tick();
+ Object.assign(w,{icon,illustration,completionFeedback,createNavigationGuard:o=>createNavigationGuard({...o,document:w.document})});w.eval((await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,''));await tick();await tick();
  const q=s=>w.document.querySelector(s),click=async s=>{q(s).click();await tick();};
  await click('#record-add');await click('[data-record-add="money"]');q('#ledger-note').value='未送出的草稿';const before=reads;
  logs.push({id:'remote-activity',recordId:'remote',at:new Date().toISOString(),userId:'b',collection:'money',area:'帳本',action:'新增',after:{note:'糖糖新增',amount:10}});

@@ -1,3 +1,4 @@
+import {createNavigationGuard} from '../public/navigation.js';
 import {icon,illustration} from '../public/icons.js';
 import {completionFeedback} from '../public/feedback.js';
 import {createLedgerUI} from '../public/ledger-ui.js';
@@ -28,7 +29,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  w.createRecordCalendar=o=>createRecordCalendar({...o,document:w.document,storage:w.localStorage});w.createMobileUI=o=>createMobileUI({...o,document:w.document});w.createLedgerUI=o=>createLedgerUI({...o,document:w.document});Object.assign(w,model,{migrateLedger,materializeRecurring,createActivityStore,retryMutation,createHomeSync,ensureMembers,renameMember,appendActivity,snapshot});w.createActivityUI=options=>createActivityUI({...options,document:w.document});w.createPetManager=options=>createPetManager({...options,document:w.document});
  w.client={auth:{getSession:async()=>({data:{session:null}}),signInWithPassword:async()=>({data:{session:{user:{id:actor,email:'one@example.com'}}}}),signOut:async()=>{signedOut?.('SIGNED_OUT',null);return{};},onAuthStateChange:fn=>{signedOut=fn;}}};
  migrateLedger(stored);w.rpc=async(name,args)=>{if(name.startsWith('family_activity_'))return activityRPC(logs,name,args);if(name==='family_read')return{id:'a',revision:rev,document:structuredClone(stored),owner:true,memberRoster:[{userId:'owner',legacyName:'阿嘎'},{userId:'partner',legacyName:'糖糖'}]};if(name==='family_save'){if(conflictOnce){conflictOnce=false;stored.threshold=7777;if(stored.chores[0])stored.chores[0].note='對方的最新備註';rev++;throw Error('資料已更新');}if(fail)throw Error('資料已更新');assert.equal(args.expected_revision,rev);stored=structuredClone(args.new_document);remember(logs,args.new_activity);return ++rev;}};
- const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');Object.assign(w,{icon,illustration,completionFeedback});w.eval(code);await tick();
+ const code=(await readFile(new URL('../public/app.js',import.meta.url),'utf8')).replace(/^import .*;\n/gm,'');Object.assign(w,{icon,illustration,completionFeedback,createNavigationGuard:o=>createNavigationGuard({...o,document:w.document})});w.eval(code);await tick();
  const q=s=>w.document.querySelector(s), click=async s=>{q(s).click();await tick();};const setHealthMonth=async value=>{for(let i=0;i<120;i++){const match=q('.page-month-picker h2').textContent.match(/(\d+)年(\d+)月/),current=match[1]+'-'+match[2].padStart(2,'0');if(current===value)return;await click(`[data-page-month="health"][data-step="${current<value?1:-1}"]`);}throw Error('月份切換失敗');};
  assert.ok(q('#auth-form'));q('[name="email"]').value='one@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();assert.ok(q('#record-add'));
  w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');q('[name="amount"]').value='200';q('#ledger-note').value='買菜';await click('#ledger-edit-categories');q('[name="categoryName"]').value='生鮮蔬果';q('[name="categoryIcon"]').value='⭐';q('#category-edit-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await tick();const category=stored.categories.find(c=>c.name==='生鮮蔬果');assert.ok(category);await click('#ledger-category-editor [data-ledger-close]');await click('#ledger-choose-category');await click(`[data-ledger-root="${category.id}"]`);conflictOnce=true;q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();assert.equal(stored.money.length,1);assert.equal(stored.threshold,7777);assert.equal(stored.money[0].category,'生鮮蔬果');assert.match(q('#view').textContent,/買菜/);await click('[data-add="money"]');await click('#ledger-choose-category');assert.ok(q('[data-ledger-recent]'));await click('#ledger-category [data-ledger-close]');await click('.close');
@@ -49,7 +50,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  await click('#settings');await click('#refresh-cloud');assert.match(q('#view').textContent,/戶外健走與伸展/);
  await setHealthMonth('2026-09');assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
  await setHealthMonth('2026-10');
- q('#health-person').value='糖糖';q('#health-person').dispatchEvent(new w.Event('change',{bubbles:true}));assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
+ [...w.document.querySelectorAll('[data-health-member]')].find(e=>e.textContent==='糖糖').click();await tick();assert.doesNotMatch(q('#view').textContent,/戶外健走與伸展/);
  w.location.hash='home';w.dispatchEvent(new w.Event('hashchange'));await tick();
 
  w.location.hash='chores';w.dispatchEvent(new w.Event('hashchange'));await tick();
@@ -73,7 +74,7 @@ test('登入介面、雲端儲存失敗回復、登出清除資料畫面',async(
  fail=false;actor='partner';q('[name="email"]').value='two@example.com';q('[name="password"]').value='12345678';q('#auth-form').dispatchEvent(new w.SubmitEvent('submit',{bubbles:true,cancelable:true,submitter:q('[value="login"]')}));await tick();
  assert.equal(q('.local-notice #refresh-cloud'),null);assert.doesNotMatch(q('.local-notice').textContent,/定期載入/);
  w.location.hash='money';w.dispatchEvent(new w.Event('hashchange'));await tick();await click('[data-add="money"]');assert.equal(q('[name="person"]'),null);assert.ok(q('[data-ledger-account="partner"]'));await click('.close');
- w.location.hash='health';w.dispatchEvent(new w.Event('hashchange'));await tick();assert.equal(q('#health-person').value,'糖糖');
+ w.location.hash='health';w.dispatchEvent(new w.Event('hashchange'));await tick();assert.equal(q('[data-health-member][aria-pressed="true"]').textContent,'糖糖');
  w.location.hash='calendar';w.dispatchEvent(new w.Event('hashchange'));await tick();assert.equal(w.location.hash,'#home');assert.equal(q('#holiday'),null);
  await click('#settings');q('[name="memberName"]').value='小糖';q('[name="memberColor"]').value='#112233';q('#form').dispatchEvent(new w.Event('submit',{cancelable:true}));await tick();
  assert.equal(stored.members.find(m=>m.userId==='partner').name,'小糖');assert.equal(stored.members.find(m=>m.userId==='owner').name,'阿嘎');await click('#record-add');await click('[data-record-add="money"]');assert.equal(q('[name="person"]'),null);assert.match(q('[data-ledger-account="partner"]').textContent,/小糖/);await click('.close');
