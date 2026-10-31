@@ -1,4 +1,4 @@
-import {recurringPreview} from './ledger-model.js';
+import {recurringPreview,expenseLines} from './ledger-model.js';
 import {choreCompletion} from './model.js';
 import {pendingPreventives,pendingVisits,doseSlotName} from './pets-model.js';
 // Read-only projection: legacy events are deliberately never consulted.
@@ -7,7 +7,7 @@ export function calendarRecords(data,today,until){
  const rows=[];const pendingVax=new Set(pendingPreventives(data).map(r=>r.id)),pendingFollowups=new Set(pendingVisits(data).map(r=>r.id));const add=(category,collection,record,date,summary,planned=false,extra={})=>{if(/^\d{4}-\d{2}-\d{2}$/.test(date||''))rows.push({key:collection+':'+record.id+':'+date+':'+rows.length,category,collection,id:record.id,date,summary,planned,record,...extra});};
  const who=r=>data.members?.find(m=>m.userId===(r.personUserId||r.userId))||data.members?.find(m=>m.name===(r.person||r.by));
  const pet=r=>data.petProfiles?.find(p=>p.id===r.petId)?.name||r.pet||'寵物';
- for(const r of data.money||[])add('money','money',r,r.date,`${r.title||r.category} · NT$${Number(r.amount).toLocaleString('zh-TW')} · ${who(r)?.name||'未知成員'}`,false,{member:who(r)});
+ for(const r of data.money||[])add('money','money',r,r.date,`${r.note||r.title||r.category}${r.splits?'（'+r.splits.length+' 項）':''} · NT$${Number(r.amount).toLocaleString('zh-TW')} · ${who(r)?.name||'未知成員'}`,false,{member:who(r)});
  const [year,month]=today.split('-').map(Number),end=until||new Date(Date.UTC(year+2,month,0)).toISOString().slice(0,10);for(const r of recurringPreview(data,today,end))if(r.date>today)add('money','recurring',r,r.date,'🔁 '+(r.note||r.category)+' · NT$'+Number(r.amount).toLocaleString('zh-TW'),true);
  const petTypes={petVisits:'就診',petPreventives:'疫苗驅蟲',petWeights:'體重',petDoses:'餵藥',pets:'飲食觀察'};
  for(const [collection,label]of Object.entries(petTypes))for(const r of data[collection]||[]){add('pet',collection,r,r.date,`${pet(r)} · ${label} · ${r.hospital||r.item||(r.drug?r.drug+' · '+doseSlotName(data,r):'')||r.title||(r.weight?r.weight+' kg':'')}`,false,{member:who(r)});const next=collection==='petPreventives'&&pendingVax.has(r.id)?r.next:collection==='petVisits'&&pendingFollowups.has(r.id)?(r.next||r.nextVisit||r.followUp):null;if(next)add('pet',collection,r,next<today?today:next,`${pet(r)} · ${collection==='petVisits'?'回診':'疫苗驅蟲'} · ${r.hospital||r.item||''}`,true,{overdue:next<today,scheduledDate:next});}
@@ -16,4 +16,4 @@ export function calendarRecords(data,today,until){
  return rows;
 }
 export function recordsOnDate(data,date,{today=date,filters=Object.keys(categories)}={}){return calendarRecords(data,today,date).filter(r=>r.date===date&&filters.includes(r.category));}
-export function searchRecords(data,query,{today,filters=Object.keys(categories)}={}){const q=query.trim().toLocaleLowerCase();if(!q)return [];return calendarRecords(data,today).filter(r=>filters.includes(r.category)&&(r.summary+' '+Object.entries(r.record).filter(([k,v])=>typeof v==='string'&&!['id','petId','userId','personUserId'].includes(k)).map(([,v])=>v).join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));}
+export function searchRecords(data,query,{today,filters=Object.keys(categories)}={}){const q=query.trim().toLocaleLowerCase();if(!q)return [];return calendarRecords(data,today).filter(r=>filters.includes(r.category)&&(r.summary+' '+(r.category==='money'?expenseLines(r.record).map(line=>[line.category,line.subcategory].join(' ')).join(' '):'')+' '+Object.entries(r.record).filter(([k,v])=>typeof v==='string'&&!['id','petId','userId','personUserId'].includes(k)).map(([,v])=>v).join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));}

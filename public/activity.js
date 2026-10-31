@@ -22,6 +22,7 @@ export function describe(data,collection,record){
  if(!record)return '';
  const pet=data.petProfiles?.find(p=>p.id===record.petId)?.name||record.pet||'';const person=data.members?.find(m=>m.userId===record.personUserId)?.name||record.person;
  if(collection==='petProfiles'||collection==='categories')return record.name;if(collection==='recurring')return [record.template?.note||record.template?.title||record.template?.category,'NT$'+Number(record.template?.amount||0).toLocaleString('zh-TW')].join(' · ');
+ if(collection==='money'&&record.splits)return (record.note||record.title||'拆分 '+record.splits.length+' 項')+' NT$'+Number(record.amount||0).toLocaleString('zh-TW')+'（拆分 '+record.splits.length+' 項）';
  if(collection==='money')return [record.date,record.title||record.category,'NT$'+Number(record.amount||0).toLocaleString('zh-TW')].filter(Boolean).join(' · ');
  if(collection==='health')return [record.date,person,record.kind==='InBody'?'InBody · '+record.weight+' kg':record.title+' · '+record.minutes+' 分鐘'].filter(Boolean).join(' · ');
  if(collection==='settings')return '共同帳戶餘額與提醒設定';

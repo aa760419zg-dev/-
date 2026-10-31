@@ -1,3 +1,4 @@
+import {expenseLines} from './ledger-model.js';
 import {visibleActivity} from './activity.js';
 const dayMs=86400000;
 const days=(a,b)=>(Date.parse(a+'T00:00:00Z')-Date.parse(b+'T00:00:00Z'))/dayMs;
@@ -5,7 +6,7 @@ const amount=r=>Number(r.amount||0);
 export function inPeriod(date,today,period){return typeof date==='string'&&date<=today&&(period==='all'||date.startsWith(today.slice(0,period==='year'?4:7)));}
 export function petSpending(data,today,period='month'){
  const categories=data.categories||[],visits=data.petVisits||[],linked=new Set((data.money||[]).filter(r=>r.visitId).map(r=>r.visitId)),other=new Map(),medicalRecords=visits.filter(v=>!linked.has(v.id)&&inPeriod(v.date,today,period)).map(record=>({type:'visit',record}));let medical=medicalRecords.reduce((sum,v)=>sum+Number(v.record.cost||0),0);
- for(const r of data.money||[]){if(r.kind!=='支出'||!inPeriod(r.date,today,period))continue;const root=categories.find(c=>c.id===r.categoryId&&!c.parentId);if((root?.name||r.category)!=='寵物')continue;const sub=categories.find(c=>c.id===r.subcategoryId);if(r.visitId||sub?.purpose==='pet-medical'||r.subcategory==='寵物醫療'){medical+=amount(r);medicalRecords.push({type:'money',record:r});continue;}const key=r.subcategoryId||r.categoryId||r.category,label=r.subcategory||r.category||'未分類',group=other.get(key)||{id:key,name:label,amount:0,records:[]};group.amount+=amount(r);group.records.push(r);other.set(key,group);}
+ for(const payment of data.money||[]){if(payment.kind!=='支出'||!inPeriod(payment.date,today,period))continue;for(const line of expenseLines(payment)){const r={...payment,...line,id:payment.id};const root=categories.find(c=>c.id===r.categoryId&&!c.parentId);if((root?.name||r.category)!=='寵物')continue;const sub=categories.find(c=>c.id===r.subcategoryId);if(r.visitId||sub?.purpose==='pet-medical'||r.subcategory==='寵物醫療'){medical+=amount(r);medicalRecords.push({type:'money',record:r});continue;}const key=r.subcategoryId||r.categoryId||r.category,label=r.subcategory||r.category||'未分類',group=other.get(key)||{id:key,name:label,amount:0,records:[]};group.amount+=amount(r);group.records.push(r);other.set(key,group);}}
 
  return {medical,medicalRecords:medicalRecords.sort((a,b)=>b.record.date.localeCompare(a.record.date)),other:[...other.values()].sort((a,b)=>b.amount-a.amount),total:medical+[...other.values()].reduce((sum,g)=>sum+g.amount,0)};
 }
@@ -13,7 +14,7 @@ export function visitSummary(data,petId,today,period='month'){const all=(data.pe
 export function restockKey(record){if(record.subcategoryId||record.subcategory)return 'sub:'+JSON.stringify([record.categoryId||record.category,record.subcategoryId||record.subcategory]);const note=String(record.note||'').trim();return note?'note:'+JSON.stringify([record.categoryId||record.category,note]):null;}
 export function restockSuggestions(data,today,{includeMuted=false}={}){
  const cutoff=new Date(today+'T00:00:00Z');cutoff.setUTCFullYear(cutoff.getUTCFullYear()-1);const start=cutoff.toISOString().slice(0,10),groups=new Map(),muted=new Set(data.settings?.mutedRestock||[]);
- for(const r of data.money||[]){if(r.kind!=='支出'||r.recurringId||r.date<start||r.date>today)continue;const key=restockKey(r);if(!key)continue;const list=groups.get(key)||[];list.push(r);groups.set(key,list);}
+ for(const r of data.money||[]){if(r.kind!=='支出'||r.recurringId||r.date<start||r.date>today)continue;for(const line of expenseLines(r)){const item={...r,...line,id:r.splits?'split:'+JSON.stringify([r.id,line.id]):r.id,recordId:r.id,splitId:r.splits?line.id:null};delete item.splits;const key=restockKey(item);if(!key)continue;const list=groups.get(key)||[];list.push(item);groups.set(key,list);}}
  const result=[];for(const [key,records]of groups){if(records.length<3||!includeMuted&&muted.has(key))continue;records.sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));const last=records.at(-1),average=days(last.date,records[0].date)/(records.length-1);if(average<3||average>180||days(today,last.date)<average-3)continue;result.push({key,name:last.subcategory||last.note.trim(),average,last,daysSince:days(today,last.date)});}return result.sort((a,b)=>(b.daysSince-b.average)-(a.daysSince-a.average));
 }
 export function setRestockMuted(data,key,muted){data.settings??={};const keys=new Set(data.settings.mutedRestock||[]);if(muted)keys.add(key);else keys.delete(key);data.settings.mutedRestock=[...keys];}
