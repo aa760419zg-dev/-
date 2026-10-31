@@ -11,5 +11,5 @@ test('iPhone 圖示尺寸、manifest、狀態列與輸入字體設定',async()=>
  for(const [x,y]of [[0,0],[size-1,0],[0,size-1],[size-1,size-1]])assert.deepEqual([...pixels.subarray((y*size+x)*3,(y*size+x)*3+3)],[49,92,76]);}
  const manifest=JSON.parse(await readFile(new URL('../public/manifest.webmanifest',import.meta.url)));assert.ok(manifest.icons.some(i=>i.sizes==='192x192'&&i.type==='image/png'));assert.ok(manifest.icons.some(i=>i.sizes==='512x512'&&i.type==='image/png'));
  const html=await readFile(new URL('../public/index.html',import.meta.url),'utf8');assert.match(html,/apple-touch-icon" href="\/apple-touch-icon.png/);assert.match(html,/apple-mobile-web-app-status-bar-style" content="default/);
- const css=await readFile(new URL('../public/style.css',import.meta.url),'utf8');assert.match(css,/input,select,textarea\{font-size:16px!important/);
+ const css=await readFile(new URL('../public/style.css',import.meta.url),'utf8');assert.match(css,/input,select,textarea\{font-size:var\(--text-input\)!important/);
 });
