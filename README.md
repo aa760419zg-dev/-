@@ -345,3 +345,5 @@ App 載入、回前景與定期同步時補齊至今天的到期紀錄，日期�
 Gemini 金鑰只由伺服器環境讀取，用 x-goog-api-key 標頭傳送。採 responseMimeType=application/json 與 responseSchema；回傳須完整涵蓋指定星期、類型在偏好內、5～90整數分鐘、強度及文字長度合規，不允許網址。沒有金鑰、429、上游失敗、15秒逾時、解析或驗證錯誤皆回 `{fallback:true}`；前端以範本完成，顯示「AI 暫時無法使用，先用內建範本排好了」。錯誤與回應不包含金鑰或上游細節。未登入401與非法請求400不會呼叫 Gemini。
 
 本批不需要 Supabase SQL。
+
+AI 失敗排查：新請求進行中會隱藏上一次範本提示，完成後以安全分類顯示原因（未設定／無效金鑰、權限、模型不可用、額度、逾時、格式或連線）。Vercel Logs 的 exercise_plan_fallback 只記 reason 與 HTTP status，不記金鑰、token、備註、家庭資料或上游原始錯誤。API 的 fallback 回應仍為 {fallback:true}，原因透過 X-Exercise-Fallback 標頭提供。
