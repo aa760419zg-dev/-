@@ -316,6 +316,32 @@ App 載入、回前景與定期同步時補齊至今天的到期紀錄，日期�
 - 本週達成的小慶祝每人每週在本機顯示一次；4、8、12、26、52 週里程碑透過 mutate 保存到 settings.goalCelebrated[userId]，以 revision 重試去重。同時跨越多個門檻只顯示最高門檻的一則訊息，所有已跨越門檻都記錄，避免之後重複慶祝。減少動態效果時不播放動畫。
 - 自己的 exerciseReminder 預設 20:00，可停用（null）；運動日提醒還要符合今天尚未正式運動、週目標未達成且非 skipped，時間前為輕提示，時間後才提醒未運動。沿用／未設定提示屬計畫確認入口，與運動日提醒分開。沒有手機推播。
 - miniTasks 兩人共用；預設六個任務唯讀提供，第一次管理或完成時才在同次 mutate 寫入預設清單。可管理名稱與預估分鐘，完成新增自己的 miniTask=true 紀錄，有動畫與五秒復原。miniTaskFrequency 自己可選不出現／偶爾／每天；偶爾用日期＋userId 固定種子，約四成日子推薦，時間為台北 10:00（含）～22:00（不含）。當日完成任何小任務後不再推薦；下次再說存於本機，存取被拒時仍於該次開啟期間有效。
-- InBody 三張 SVG 圖依體重、骨骼肌量、體脂率顯示，可看近三／六個月或全部。一起模式預設每人期間第一點為 0，另可看實際值；個人模式看實際值、與上次及期間第一次的差值。文字採中性色，曲線與圖例使用 members 代表色，沒有資料者明確註明。
+- InBody 單張 SVG 圖以膠囊切換體重、骨骼肌量、體脂率顯示，可看近三／六個月或全部。一起模式預設每人期間第一點為 0，另可看實際值；個人模式看實際值、與上次及期間第一次的差值。文字採中性色，曲線與圖例使用 members 代表色，沒有資料者明確註明。
 
 所有計畫、設定、任務 CRUD、完成與慶祝旗標皆走 mutate 並寫入 family_activity；計畫可從操作紀錄還原。六十秒同步備援也刷新台北跨日／提醒時間的呈現，輸入有焦點或面板開啟時不重繪。本批不需執行 SQL，也不需遷移既有 health 資料；記帳拆分及代墊補款沿用原流程。
+
+### AI 週計畫內容與設定步驟
+
+本週目標使用固定日期範圍（例如 11/2（一）～11/8（日）），月份與成員切換同列，手機不足時顯示短月份。InBody 為單圖切換，指標、期間、數值／變化量偏好存於 localStorage（存取包 try/catch）。我的提醒、管理小任務及運動歷史預設收合，點日期會展開當日紀錄。相同測試資料、375×667 下，整頁由 3,875px 縮至約 2,254px，減少約42%；此量測包含雙人 InBody 與七筆歷史，實際高度依資料量、展開狀態與字型而變。
+
+共用偏好位於 `settings.exercisePreferences`：強度、可複選類型、15／20／30／45分鐘、100字內備註；讀取缺少設定的舊文件時提供預設值，不自動遷移。`exercisePlans[週一].items` 依星期1～7儲存 type、title、minutes、intensity、description、videoQuery、source。只有已選日子有內容；移除日子刪除其內容，新增日子留空；沿用上週只沿用星期，不沿用內容。一鍵產生、單日重排、手動編輯皆經 mutate 與 family_activity。產生期間若對方修改內容、日子或偏好會停止存檔，避免覆蓋。
+
+「找影片」只將經驗證的搜尋關鍵字 encodeURIComponent 後開啟 YouTube 搜尋（新視窗、noopener）。不使用 AI 給的網址；含網址或額外影片連結欄位的 AI 回應會整份丟棄。範本為純函式，同樣輸入固定結果，備註提到不適時改用輕鬆強度。
+
+#### 在 Vercel 啟用 Gemini
+
+1. 到 [Google AI Studio](https://aistudio.google.com/apikey) 建立 API 金鑰。金鑰只填在 Vercel，勿貼入聊天或 public/config.js。
+2. 開啟 Vercel 的本專案 → **Settings（設定）→ Environment Variables（環境變數）**。
+3. 新增 **GEMINI_API_KEY**，Value 填入剛建立的金鑰，套用到需要使用的環境（正式 App 為 Production）。
+4. 可選填 **GEMINI_MODEL**；未填時使用 `gemini-3.8-flash`，依 Google 官方 [Get Started 入門範例](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Get_started.ipynb) 的目前預設 Flash 模型。模型可用性與免費額度以你的 AI Studio 帳號與 [官方價格表](https://ai.google.dev/gemini-api/docs/pricing) 為準。本環境可讀官方 GitHub，但 Google 官網價格頁受網路限制，未能直接核對該帳號免費額度。
+5. 儲存後到 **Deployments（部署）**，在最新部署右側 **⋯ → Redeploy（重新部署）**。等 Ready 後重新整理 App。沒有設定金鑰時仍可正常使用內建範本。
+
+本機可在自己的終端環境設定 GEMINI_API_KEY（及選填 GEMINI_MODEL）後執行 npm start；請勿把實際金鑰寫入版本控制。`server.js` 與 Vercel root `api/exercise-plan.js` 共用同一個處理器。Vercel 保留 public 靜態輸出，functions 設定明列 api/exercise-plan.js、maxDuration=30；沒有攔截 /api 的 SPA rewrite。Vercel 部署完成與 Gemini 真實額度仍需在設定金鑰後確認；自動測試使用模擬上游，不消耗 Gemini 額度。
+
+#### AI 請求與保護
+
+前端用目前 Supabase access token 作為 Bearer 標頭呼叫同站 `/api/exercise-plan`；函式以 public/config.js 相同 URL／publishable key 呼叫 auth.getUser(token)，未登入為401。只接受 intensity、types、minutes、note、days、weekStart 六個欄位；不傳 members、名字、Email、運動紀錄、體重、InBody、帳本或其他家庭文件。備註是使用者主動輸入的活動需求，會送給 Gemini。
+
+Gemini 金鑰只由伺服器環境讀取，用 x-goog-api-key 標頭傳送。採 responseMimeType=application/json 與 responseSchema；回傳須完整涵蓋指定星期、類型在偏好內、5～90整數分鐘、強度及文字長度合規，不允許網址。沒有金鑰、429、上游失敗、15秒逾時、解析或驗證錯誤皆回 `{fallback:true}`；前端以範本完成，顯示「AI 暫時無法使用，先用內建範本排好了」。錯誤與回應不包含金鑰或上游細節。未登入401與非法請求400不會呼叫 Gemini。
+
+本批不需要 Supabase SQL。

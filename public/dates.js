@@ -10,3 +10,6 @@ export function formatDate(value,reference=localDay()){
 }
 export function formatDateTime(value){const date=new Date(value);if(!Number.isFinite(date.getTime()))return String(value||'');return formatDate(localDay(date))+' '+taipeiTime(date);}
 export function formatDatesInText(value,reference){return String(value??'').replace(/\b\d{4}-\d{2}-\d{2}\b/g,date=>formatDate(date,reference));}
+
+export function shiftDay(date,days){const d=new Date(date+'T00:00:00Z');d.setUTCDate(d.getUTCDate()+days);return d.toISOString().slice(0,10);}
+export function weekStart(date){const d=new Date(date+'T00:00:00Z');return shiftDay(date,-((d.getUTCDay()+6)%7));}

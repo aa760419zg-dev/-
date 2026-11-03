@@ -3,5 +3,10 @@
   "framework": null,
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
-  "outputDirectory": "public"
+  "outputDirectory": "public",
+  "functions": {
+    "api/exercise-plan.js": {
+      "maxDuration": 30
+    }
+  }
 }
