@@ -1,5 +1,6 @@
+import {assertExerciseMutation} from './exercise-model.js';
 import {validateReimbursements,commonBalance,assertSettledEdit,migrationSummary} from './reimbursements.js';
-export const areas={settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
+export const areas={exercisePlans:'運動',settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
 const clone=value=>value==null?null:structuredClone(value);
 export function equal(a,b){
  if(a===b)return true;if(a==null||b==null||typeof a!=='object'||typeof b!=='object')return false;
@@ -12,6 +13,7 @@ const accountSettings=data=>({opening:data.opening,threshold:data.threshold,...(
 export function changesBetween(before,after){
  const changes=[];
  for(const collection of Object.keys(areas)){
+  if(collection==='exercisePlans'){for(const id of new Set([...Object.keys(before.exercisePlans||{}),...Object.keys(after.exercisePlans||{})]))if(!equal(before.exercisePlans?.[id]??null,after.exercisePlans?.[id]??null))changes.push({collection,id,before:clone(before.exercisePlans?.[id]),after:clone(after.exercisePlans?.[id])});continue;}
   const old=new Map((before[collection]||[]).map(x=>[recordKey(collection,x),x])),now=new Map((after[collection]||[]).map(x=>[recordKey(collection,x),x]));
   for(const id of new Set([...old.keys(),...now.keys()]))if(!equal(old.get(id)??null,now.get(id)??null))changes.push({collection,id,before:clone(old.get(id)),after:clone(now.get(id)),beforeIndex:(before[collection]||[]).findIndex(x=>recordKey(collection,x)===id)});
  }
@@ -76,14 +78,14 @@ export function visibleActivity(entry,userId){
  return true;
 }
 export function rootEntry(data,id){const entry=data.activity?.find(x=>x.id===id);if(!entry)return null;return data.activity.find(x=>x.id===(entry.rootId||entry.id))||entry;}
-export function currentFor(data,change){if(change.collection==='settings')return accountSettings(data);if(change.collection==='document')return snapshot(data);return clone((data[change.collection]||[]).find(x=>recordKey(change.collection,x)===change.id));}
+export function currentFor(data,change){if(change.collection==='exercisePlans')return clone(data.exercisePlans?.[change.id]);if(change.collection==='settings')return accountSettings(data);if(change.collection==='document')return snapshot(data);return clone((data[change.collection]||[]).find(x=>recordKey(change.collection,x)===change.id));}
 export function restoreState(data,entry){return (entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}]).map(c=>currentFor(data,c));}
 export function archivedActivity(entry){return entry?.collection==='events'||entry?.changes?.some(c=>c.collection==='events');}
 export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entries=data.activity||[]}={}){
  const entry=rootEntry({activity:entries},id);if(!entry||!visibleActivity(entry,userId))throw Error('找不到可還原的操作紀錄');
  if(entry.systemMigration)throw Error('資料升級紀錄僅供查看');
  if(archivedActivity(entry))throw Error('舊行程已封存，僅供查看，不支援還原');
- if(!(entry.collection==='settlements'&&entry.action==='新增')&&!['刪除','編輯'].includes(entry.action)&&!(entry.action==='完成'&&entry.collection==='chores'))throw Error('此操作不支援還原');
+ if(!(['settlements','exercisePlans'].includes(entry.collection)&&entry.action==='新增')&&!['刪除','編輯'].includes(entry.action)&&!(entry.action==='完成'&&entry.collection==='chores'))throw Error('此操作不支援還原');
  const changes=entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}],current=changes.map(c=>currentFor(data,c));
  if(changes.every((c,i)=>equal(current[i],c.before)))return false;
  const position=entries.findIndex(x=>x.id===entry.id);const newer=changes.some((c,i)=>!equal(current[i],c.after))||entries.slice(position+1).some(e=>e.groupId!==entry.groupId&&(e.collection==='document'||changes.some(c=>c.collection===e.collection&&c.id===e.recordId||e.changes?.some(other=>other.collection===c.collection&&other.id===c.id))));
@@ -93,10 +95,11 @@ export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entrie
   if(!Object.hasOwn(areas,change.collection)&&!['settings','document'].includes(change.collection))throw Error('不支援還原這個資料類型');const target=clone(change.before);
   if(change.collection==='settings'){restored.opening=target.opening;restored.threshold=target.threshold;if(Object.hasOwn(target,'preferences'))restored.settings=clone(target.preferences);else if(Object.hasOwn(change.after||{},'preferences'))delete restored.settings;continue;}
   if(change.collection==='document'){const events=clone(restored.events);for(const k of Object.keys(restored))delete restored[k];Object.assign(restored,snapshot(target));restored.events=events;continue;}
+  if(change.collection==='exercisePlans'){restored.exercisePlans??={};if(target==null)delete restored.exercisePlans[change.id];else restored.exercisePlans[change.id]=target;continue;}
   const list=restored[change.collection]??=[];const index=list.findIndex(x=>recordKey(change.collection,x)===change.id);
   if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.splice(Number.isInteger(change.beforeIndex)?Math.min(change.beforeIndex,list.length):list.length,0,target);
  }
- validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
+ assertExerciseMutation(data,restored,userId);validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
  return true;
 }
 export function changedFields(before,after,prefix=''){
