@@ -346,6 +346,8 @@ Gemini 金鑰只由伺服器環境讀取，用 x-goog-api-key 標頭傳送。採
 
 本批不需要 Supabase SQL。
 
-AI 失敗排查：新請求進行中會隱藏上一次範本提示，完成後以安全分類顯示原因（未設定／無效金鑰、權限、模型不可用、額度、逾時、格式或連線）。Vercel Logs 的 exercise_plan_fallback 只記 reason 與 HTTP status，不記金鑰、token、備註、家庭資料或上游原始錯誤。API 的 fallback 回應仍為 {fallback:true}，原因透過 X-Exercise-Fallback 標頭提供。
+AI 失敗排查：新請求進行中會隱藏上一次範本提示，完成後以安全分類顯示原因（未設定／無效金鑰、權限、模型不可用、額度、逾時、格式或連線）。Vercel Logs 的 exercise_plan_fallback 只記 reason、模型名稱、耗時 elapsedMs 與 HTTP status，不記金鑰、token、備註、家庭資料或上游原始錯誤。API 的 fallback 回應仍為 {fallback:true}，原因透過 X-Exercise-Fallback 標頭提供。
 
 運動足跡捲動修正：點日期不再自動捲到頁尾，選取狀態與焦點留在月曆；當日清單在月曆下方、InBody 上方展開。「顯示整個月」沿用這個位置，切換成員或月份才回到預設收合歷史的版面。僅修改呈現，不寫入家庭資料。
+
+Flash 低延遲設定：Gemini 3 Flash 與 Flash 最新別名使用 thinkingLevel=MINIMAL；2.5 Flash 使用 thinkingBudget=0，並要求精簡文字。依據 Google 官方 [Thinking 範例](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Get_started_thinking.ipynb)。若模型以 400 拒絕推理設定，只移除該設定相容重試一次；兩次共用原本的 15 秒期限，不因重試延長。429／503 不重試，仍回範本；此設定不能保證 Google 服務忙碌時不逾時。
