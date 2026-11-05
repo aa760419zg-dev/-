@@ -529,9 +529,9 @@ nav a{font-size:var(--text-md)}
 :root{--atlas-hair:#695643;--atlas-skin:#F2D7B5;}
 .atlas-count.wish path { fill:var(--surface); stroke:var(--offline); stroke-dasharray:3 2; }
 .atlas-count.wish text { fill:var(--muted); }
-.atlas-couple { width:135px; height:90px; flex:none; }
+.atlas-couple { display:block; width:160px; height:120px; object-fit:contain; flex:none; }
 .atlas-intro { justify-content:flex-start; gap:24px; }
-@media(max-width:759px) { .atlas-couple { width:108px; height:72px; } .atlas-intro { gap:10px; justify-content:space-between; } .atlas-intro p { line-height:1.8; } }
+@media(max-width:759px) { .atlas-couple { width:128px; height:96px; } .atlas-intro { gap:10px; justify-content:space-between; } .atlas-intro p { line-height:1.8; } }
 .places-atlas-page .places-progress { border:0; padding:0; background:transparent; }
 @media(min-width:760px) { .places-atlas { max-height:640px; } }
 
