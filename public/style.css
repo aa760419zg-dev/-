@@ -351,3 +351,21 @@ nav a{font-size:var(--text-md)}
  .mj-rank-table th:first-child,.mj-rank-table td:first-child { width:28px; }
  .mj-top-tools { gap:5px; }.mj-years button { padding:5px 9px; }
 }
+
+/* Mahjong quick filters and compact, left-aligned top ten. */
+.mj-months { display:flex; gap:6px; overflow-x:auto; max-width:100%; margin-bottom:10px; }
+.mj-months button { flex:none; white-space:nowrap; border-radius:20px; padding:5px 9px; font-size:var(--text-sm); min-height:34px; }
+.mj-inactive-toggle { margin-bottom:8px; font-size:var(--text-sm); }
+.mj-battle tbody tr.mj-selected-row td,.mj-battle tbody tr.mj-selected-row th { background:var(--accent-soft); }
+.mj-selected-tools { display:flex; align-items:center; gap:8px; margin-top:8px; font-size:var(--text-sm); }
+.mj-selected-tools[hidden] { display:none; }
+.mj-selected-tools>span { flex:1; min-width:0; overflow-wrap:anywhere; }
+.mj-selected-tools button { flex:none; font-size:var(--text-sm); }
+.mj-rank-scroll { max-width:760px; margin-right:auto; }
+.mj-rank-table { table-layout:fixed; }
+.mj-rank-position { width:44px; }
+.mj-rank-name { width:28%; }
+.mj-rank-table th:first-child,.mj-rank-table td:first-child { text-align:center; }
+.mj-rank-table button { max-width:100%; }
+.mj-rank-table button span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+@media(max-width:759px) { .mj-rank-position { width:30px; } .mj-rank-name { width:26%; } }
