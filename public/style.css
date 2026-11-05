@@ -369,3 +369,24 @@ nav a{font-size:var(--text-md)}
 .mj-rank-table button { max-width:100%; }
 .mj-rank-table button span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
 @media(max-width:759px) { .mj-rank-position { width:30px; } .mj-rank-name { width:26%; } }
+
+/* Mahjong period picker, read-only session details and award cards. */
+.mj-range-bar,.mj-range-quick { display:flex; align-items:center; gap:6px; margin-bottom:10px; }
+.mj-range-bar button,.mj-range-quick button { font-size:var(--text-sm); min-height:36px; padding:5px 9px; }
+.mj-awards { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; min-width:0; max-width:100%; margin:12px 0; }
+.mj-award { padding:12px 10px; border:1px solid var(--line); background:var(--surface); border-radius:12px; min-width:0; }
+.mj-award h3 { font-size:var(--text-md); margin:0 0 10px; white-space:nowrap; }
+.mj-award p { font-size:var(--text-sm); margin:6px 0 0; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.mj-award-names { font-size:var(--text-md); line-height:1.7; overflow-wrap:anywhere; }
+.mj-detail-date { color:var(--muted); font-size:var(--text-sm); }
+.mj-detail-scores>div { display:flex; align-items:center; gap:8px; padding:10px 0; border-bottom:1px solid var(--line); }
+.mj-detail-scores strong { flex:1; display:flex; align-items:center; gap:6px; font-weight:500; }
+.mj-detail-note { white-space:pre-wrap; overflow-wrap:anywhere; font-size:var(--text-sm); }
+.mj-detail-footer { display:flex; justify-content:flex-end; }
+.mj-text-button { border:0; background:transparent; color:var(--primary); padding:7px 4px; min-height:36px; font-size:var(--text-sm); }
+.mj-battle thead button.mj-inactive-toggle { width:auto; max-width:none; margin:0; font-size:var(--text-xs); }
+@media(min-width:760px) { .mj-rank-scroll { max-width:720px; margin-left:0; margin-right:auto; } .mj-rank-position { width:48px; } .mj-rank-name { width:150px; } }
+@media(max-width:759px) {
+ .mj-awards { display:flex; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; padding-bottom:6px; }
+ .mj-award { flex:0 0 150px; width:150px; scroll-snap-align:start; }
+}
