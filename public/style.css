@@ -247,36 +247,107 @@ nav a{font-size:var(--text-md)}
  .exercise-section{padding:10px 12px;margin:10px 0}.exercise-section>.section-title{margin-bottom:6px}.exercise-section>.section-title h2{font-size:var(--text-lg)}.exercise-section>.hint{margin:4px 0}.exercise-goal{padding:6px 8px}.exercise-goal .hint{margin:3px 0;font-size:var(--text-sm)}.goal-dots{margin:6px 0;min-height:20px}.exercise-goals+.hint{margin:5px 0}.exercise-day-note{margin:5px 0;padding:3px 7px;font-size:var(--text-sm)}.exercise-plan-notice{margin:4px 0;line-height:1.5}.exercise-weekdays{margin:6px 0;gap:4px}.exercise-weekdays button{min-height:36px;padding:4px 0}.exercise-plan-card #exercise-plan>.toolbar{margin:6px 0;gap:5px}.exercise-plan-card #exercise-plan>.toolbar button,.exercise-generate{min-height:34px;padding:5px 9px;font-size:var(--text-sm)}.exercise-preferences{padding-top:6px;margin-top:6px}.exercise-preferences>summary{min-height:24px;font-size:var(--text-sm)}.exercise-plan-item>summary{min-height:36px}.exercise-plan-item>summary>.subtle{margin-left:auto;min-height:32px;padding:4px 7px;font-size:var(--text-sm)}.mini-compact{gap:6px}.mini-compact .member-color{margin-right:3px}.mini-compact button{font-size:var(--text-sm)}.exercise-member-stats{margin:10px 0;gap:10px}.exercise-member-stats h3{margin-bottom:4px}.exercise-member-stats .exercise-stats{gap:5px 3px;padding:6px}.exercise-member-stats .exercise-stats strong{line-height:1.2}.exercise-member-stats .exercise-stats small{line-height:1.3}.exercise-calendar .day{min-height:38px;padding-top:3px;padding-bottom:2px;gap:0}.exercise-calendar .day-name{padding:4px 0}.exercise-calendar .exercise-calendar-marks{min-height:15px}.exercise-calendar .empty-health-day{height:0}.exercise-calendar .day small{line-height:1.2}.exercise-calendar+.hint{margin:5px 0}.body-metrics{gap:4px;margin-bottom:4px}.body-metrics button,.body-controls button{min-height:30px;padding:3px 7px;font-size:var(--text-sm)}.body-controls{flex-wrap:wrap;gap:4px;margin-bottom:0}.body-controls .body-modes{gap:4px}.inbody-charts{gap:0}.inbody-metric h3{display:none}.inbody-chart{height:120px;max-height:120px}.inbody-values p{margin:3px 0;line-height:1.4}.inbody-metric>.hint{margin:4px 0;line-height:1.5}.exercise-body-card>[data-exercise-inbody]{min-height:32px;padding:5px 8px;font-size:var(--text-sm)}.exercise-records{margin:10px 0;padding:10px 12px}.exercise-records .health-record{padding:8px 0}.exercise-records .health-record-note{font-size:var(--text-sm)}
 }
 
-/* Mahjong keeps the existing warm cards and dialog/bottom-sheet treatment. */
-:root { --category-mahjong: var(--category-chore); }
-.category-mahjong { --category: var(--category-mahjong); }
-.mj-heading-actions,.mj-years,.mj-dong-row,.mj-dong-input { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.mj-years { margin-bottom:16px; }
-.mj-session { display:flex; flex-direction:column; gap:8px; text-align:left; width:100%; background:transparent; color:var(--text); border:0; border-bottom:1px solid var(--line); padding:16px 0; font-size:var(--text-md); }
-.mj-session small,.mj-rank small { font-size:var(--text-sm); color:var(--muted); }
-.mj-rank { display:grid; grid-template-columns:32px 1fr auto; width:100%; gap:8px; background:transparent; border:0; border-bottom:1px solid var(--line); padding:14px 0; text-align:left; color:inherit; }
-.mj-rank small { grid-column:2 / 4; }
-.mj-rank strong { display:flex; align-items:center; gap:6px; }
-.mj-dong-row { padding:10px 0; }
-.mj-sheet { width:min(620px,calc(100% - 24px)); max-height:90dvh; overflow:auto; }
-.mj-content { padding:4px 4px 16px; }
-#mj-player-options { display:flex; flex-wrap:wrap; gap:8px; max-height:180px; overflow:auto; margin:12px 0; }
-.mj-player-choice { display:flex; align-items:center; gap:5px; min-height:44px; padding:4px 8px; background:var(--surface); border-radius:12px; }
-.mj-player-choice input { width:18px; }
-.mj-score { display:grid; grid-template-columns:minmax(70px,1fr) minmax(80px,1fr); align-items:center; gap:6px; padding:8px 0; }
-.mj-score input { min-width:0; cursor:pointer; text-align:right; }
-.mj-score [data-mj-suggestion] { grid-column:1 / -1; text-align:right; }
-.mj-warning { color:var(--accent-text); }
-.mj-chart { width:100%; max-height:240px; overflow:visible; }
+/* Mahjong presentation is scoped here; records and calculation rules stay unchanged. */
+:root{ --category-mahjong: var(--category-chore); --mahjong-loss:#B5564A; }
+.category-mahjong { --category:var(--category-mahjong); }
+.mj-page { min-width:0; max-width:100%; overflow:hidden; }
+.mj-top-tools { display:flex; align-items:center; gap:8px; margin-bottom:10px; min-width:0; }
+.mj-years { display:flex; gap:6px; overflow-x:auto; min-width:0; flex:1; scrollbar-width:thin; }
+.mj-years button,.mj-tabs button { white-space:nowrap; border-radius:24px; min-height:36px; padding:6px 12px; font-size:var(--text-sm); flex:none; }
+.mj-settings-icon { margin-left:auto; flex:none; width:40px; height:40px; padding:8px; }
+.mj-settings-icon .app-icon { width:22px; height:22px; }
+.mj-tabs { display:flex; gap:8px; margin-bottom:12px; }
+.mj-period-summary { font-size:var(--text-sm); margin:8px 0; }
+.mj-table-scroll { overflow:auto; max-height:65dvh; width:100%; max-width:100%; overscroll-behavior:contain; isolation:isolate; border-radius:8px; }
+.mj-battle { border-collapse:separate; border-spacing:0; min-width:100%; width:max-content; font-size:var(--text-sm); font-variant-numeric:tabular-nums; }
+.mj-battle th,.mj-battle td { padding:4px; min-width:64px; text-align:right; white-space:nowrap; border-bottom:1px solid var(--line); }
+.mj-battle thead { position:sticky; top:0; z-index:3; background:var(--surface); }
+.mj-battle thead th,.mj-battle thead td { height:23px; font-weight:400; background:var(--surface); }
+.mj-battle thead tr:last-child { font-size:var(--text-xs); }
+.mj-battle thead button { display:inline-flex; gap:3px; align-items:center; padding:1px 0; border:0; background:transparent; color:var(--text); font-size:var(--text-sm); width:56px; max-width:56px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mj-battle thead button span { min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.mj-battle .mj-date-column { position:sticky; left:0; min-width:56px; text-align:left; z-index:2; background:var(--surface); font-weight:400; }
+.mj-battle thead .mj-date-column { z-index:4; }
+.mj-battle tbody tr { height:40px; cursor:pointer; }
+.mj-battle tbody tr:hover td,.mj-battle tbody tr:hover th { background:var(--selected-bg); }
+.mj-battle .member-color,.mj-rank-table .member-color { flex:none; }
+.mj-positive { color:var(--primary); }
+.mj-negative { color:var(--mahjong-loss); }
+.mj-zero { color:var(--muted); }
+.mj-note-dot { font-size:var(--text-xs); color:var(--tea); margin-left:2px; }
+.mj-dong-tag { display:inline-block; margin-left:3px; font-size:var(--text-xs); color:var(--reminder-text); background:var(--accent-soft); border-radius:4px; padding:1px 3px; }
+.mj-load-more { width:100%; margin-top:10px; }
+.mj-rank-scroll { overflow:auto; width:100%; }
+.mj-rank-table,.mj-companions { width:100%; border-collapse:collapse; font-variant-numeric:tabular-nums; font-size:var(--text-sm); }
+.mj-rank-table th,.mj-rank-table td,.mj-companions th,.mj-companions td { padding:5px; text-align:right; border-bottom:1px solid var(--line); height:44px; white-space:nowrap; }
+.mj-rank-table th:nth-child(2),.mj-companions th { text-align:left; }
+.mj-rank-table button { padding:0; border:0; background:transparent; font-size:var(--text-sm); color:var(--text); display:inline-flex; align-items:center; gap:4px; }
+.mj-less { margin-top:10px; }
+.mj-less summary { font-size:var(--text-sm); min-height:40px; display:flex; align-items:center; cursor:pointer; }
+.mj-stats-three,.mj-stats-four { display:grid; gap:6px; grid-template-columns:repeat(3,minmax(0,1fr)); text-align:center; margin:12px 0; }
+.mj-stats-four { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.mj-stats-three b,.mj-stats-four b { display:block; font-size:var(--text-lg); }
+.mj-stats-three small,.mj-stats-four small { display:block; font-size:var(--text-sm); color:var(--muted); }
+.mj-dong-row { display:flex; gap:6px; align-items:center; border-bottom:1px solid var(--line); padding:8px 0; }
+.mj-dong-copy { flex:1; min-width:0; text-align:left; border:0; background:transparent; color:var(--text); padding:0; }
+.mj-dong-copy strong,.mj-dong-copy small { display:block; font-size:var(--text-sm); white-space:nowrap; text-overflow:ellipsis; overflow:hidden; }
+.mj-dong-copy small { color:var(--muted); }
+.mj-dong-row>.subtle { font-size:var(--text-sm); padding:5px 7px; flex:none; }
+.mj-personal-head { display:flex; gap:8px; align-items:center; margin:8px 0; }
+.mj-personal-head a { color:var(--primary); display:flex; }
+.mj-personal-head h1 { font-size:var(--text-lg); margin:0; flex:1; display:flex; gap:4px; align-items:center; min-width:0; overflow-wrap:anywhere; }
+.mj-personal-head small { font-size:var(--text-sm); }
+.mj-personal-head button { font-size:var(--text-sm); padding:5px 7px; }
+.mj-chart { width:100%; height:160px; display:block; }
 .mj-chart text { fill:var(--muted); font-size:var(--text-xs); }
+.mahjong-sheet { width:min(620px,calc(100% - 24px)); max-height:90dvh; overflow:auto; padding:16px; }
+.mahjong-sheet .dialog-head { margin-bottom:10px; gap:6px; }
+.mahjong-sheet .dialog-head h2 { font-size:var(--text-lg); }
+.mahjong-sheet .dialog-head>[data-mj-close] { flex:none; padding:6px; border:0; background:transparent; color:var(--text); }
+.mahjong-sheet .mj-content { min-height:0; padding:0; }
+#mahjong-sheet[open] { display:flex; flex-direction:column; overflow:hidden; }
+#mahjong-sheet>.mj-content { display:flex; flex-direction:column; }
+#mj-form { display:flex; flex-direction:column; min-height:0; }
+.mj-form-scroll { overflow-y:auto; min-height:0; }
+.mj-form-scroll [role=alert]:empty { display:none; }
+.mj-date-button { margin-left:auto; font-size:var(--text-sm); padding:6px 8px; }
+.mj-same { display:block; width:100%; text-align:left; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:var(--text-sm); padding:6px 8px; margin-bottom:6px; }
+.mj-popular { display:flex; align-items:flex-start; gap:5px; font-size:var(--text-sm); margin-bottom:6px; }
+.mj-popular>span { padding-top:6px; white-space:nowrap; }
+#mj-frequent { display:flex; gap:4px; flex:1; flex-wrap:wrap; min-width:0; }
+#mj-frequent button,.mj-popular>button { font-size:var(--text-sm); min-height:30px; padding:4px 7px; border-radius:18px; display:inline-flex; gap:3px; align-items:center; }
+.mj-popular>button { white-space:nowrap; }
+#mj-player-options { display:flex; flex-wrap:wrap; gap:8px; overflow:auto; max-height:50dvh; margin:10px 0; }
+#mj-player-options button { border-radius:20px; min-height:40px; display:flex; align-items:center; gap:4px; }
+.mj-score { display:grid; grid-template-columns:minmax(70px,1fr) minmax(110px,1fr) 30px; gap:6px; align-items:center; min-height:40px; }
+.mj-score strong { display:flex; gap:5px; align-items:center; font-weight:500; font-size:var(--text-md); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.mj-score-amount { position:relative; min-width:0; }
+.mj-score input { min-width:0; width:100%; height:34px; padding:5px 8px; text-align:right; cursor:pointer; font-variant-numeric:tabular-nums; }
+.mj-score-amount [data-mj-suggestion]:not(:empty) { position:absolute; inset:0; }
+.mj-suggestion { font-size:var(--text-sm); color:var(--muted); background:var(--surface); border:0; border-radius:8px; padding:5px 8px; }
+.mj-score-amount .mj-suggestion { width:100%; height:100%; text-align:right; }
+.mj-remove { border:0; background:transparent; padding:3px; min-height:34px; }
+.mj-dong-input { display:flex; align-items:center; gap:8px; min-height:40px; margin-top:6px; font-size:var(--text-sm); }
+.mj-dong-input>button { margin-left:auto; padding:5px 8px; }
+.mj-dong-input select { width:100px; height:36px; margin:0; padding:4px; }
+.mj-note { font-size:var(--text-sm); padding:5px 0; }
+.mj-note summary { cursor:pointer; min-height:26px; color:var(--primary); list-style:none; }
+.mj-note textarea { min-height:48px; margin:4px 0; }
+.mj-form-footer { display:flex; align-items:center; gap:8px; padding-top:10px; border-top:1px solid var(--line); background:var(--surface); flex:none; }
+#mj-balance { flex:1; font-size:var(--text-md); }
+.mj-form-footer [type=submit] { min-height:40px; padding:8px 18px; }
+.mj-warning { color:var(--reminder-text); }
 .mj-keys { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
-.mj-keys button { min-height:48px; font-size:var(--text-lg); touch-action:manipulation; }
+.mj-keys button { min-height:44px; font-size:var(--text-lg); touch-action:manipulation; }
 .mj-keys button:active { transform:scale(.95); background:var(--accent-soft); }
 #mj-expression { font-size:var(--text-size-24); }
+.mj-key-player { margin:0; font-size:var(--text-md); }
 .mj-player-management { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
 #mj-import-preview { white-space:pre-wrap; overflow-wrap:anywhere; }
 @media(max-width:759px) {
  .mj-desktop-add { display:none; }
- .mahjong-sheet { position:fixed; margin:auto 0 0; bottom:0; width:100%; max-width:none; max-height:90dvh; border-radius:22px 22px 0 0; padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
- .mj-rank,.mj-session { overflow-wrap:anywhere; }
+ .mahjong-sheet { position:fixed; margin:auto 0 0; bottom:0; width:100%; max-width:none; max-height:calc(100dvh - 12px); border-radius:22px 22px 0 0; padding:12px 12px calc(12px + env(safe-area-inset-bottom)); }
+ .mj-rank-table th,.mj-rank-table td { padding:4px 3px; }
+ .mj-rank-table th:first-child,.mj-rank-table td:first-child { width:28px; }
+ .mj-top-tools { gap:5px; }.mj-years button { padding:5px 9px; }
 }
