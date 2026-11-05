@@ -450,3 +450,16 @@ nav a{font-size:var(--text-md)}
 #places-map .leaflet-control-attribution { font-size:var(--text-xs); color:var(--muted); }
 #places-map .leaflet-control-attribution a { color:var(--primary); }
 #places-map .leaflet-popup-content { font-size:var(--text-sm); }
+
+.category-places { --category:var(--category-pet); }
+.place-memory-open { display:flex; align-items:center; gap:6px; flex:1; min-width:0; border:0; background:transparent; color:inherit; padding:0; text-align:left; font-size:var(--text-md); }
+.place-memory-dismiss { flex:none; border:0; background:transparent; color:var(--muted); width:32px; min-height:36px; padding:0; font-size:var(--text-lg); }
+#place-memory .dialog-head h2 { font-size:var(--text-size-24); line-height:1.5; }
+.place-memory-visits article { border-bottom:1px solid var(--line); padding:10px 0; }
+.place-memory-visits h3 { margin:4px 0; }
+.places-map-wrap { position:relative; }
+.places-map-filter { position:absolute; top:10px; right:10px; z-index:500; }
+.places-map-filter>button { display:flex; align-items:center; gap:5px; background:var(--surface); min-height:38px; font-size:var(--text-sm); }
+.places-filter-popover { width:240px; max-width:calc(100vw - 54px); padding:10px; border:1px solid var(--line); background:var(--surface); border-radius:12px; margin-top:6px; box-shadow:0 5px 18px var(--shadow); }
+.places-filter-popover>div { display:flex; gap:5px; margin-bottom:8px; flex-wrap:wrap; }
+.places-filter-popover button { padding:5px 7px; min-height:34px; font-size:var(--text-sm); }

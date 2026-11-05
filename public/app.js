@@ -24,7 +24,7 @@ let navigationGuard=null;
 let data=empty(),session=null,cloudHome=null,loading=true,busy=false,authBusy=false,loadedUserId=null,syncState='syncing';
 const activityStore=createActivityStore({rpc,getHome:()=>cloudHome});
 let pendingActivity=[];
-const petManager=createPetManager({getData:()=>data,getHome:()=>cloudHome,getSession:()=>session,mutate,refresh:loadHome,render,openLegacy:open,today,toast,client,activity:activityStore,offerDoseUndo:(id,groupId)=>activityUI.offerDoseUndo(id,groupId),exerciseHome:()=>exerciseUI.homeRows(),getMember:currentMember,removeRecord:(collection,id)=>activityUI.remove(collection,id)});
+const petManager=createPetManager({getData:()=>data,getHome:()=>cloudHome,getSession:()=>session,mutate,refresh:loadHome,render,openLegacy:open,today,toast,client,activity:activityStore,offerDoseUndo:(id,groupId)=>activityUI.offerDoseUndo(id,groupId),exerciseHome:()=>exerciseUI.homeRows(),placesHome:()=>placesUI.homeRows(),getMember:currentMember,removeRecord:(collection,id)=>activityUI.remove(collection,id)});
 const activityUI=createActivityUI({getData:()=>data,getUserId:()=>session?.user.id,mutate,render,toast,activity:activityStore});
 const ledgerUI=createLedgerUI({getData:()=>data,getMember:currentMember,getHomeId:()=>cloudHome?.id,mutate,removeRecord:(collection,id)=>activityUI.remove(collection,id),calculateAmount,today,toast,render});
 const exerciseUI=createExerciseUI({getData:()=>data,getMember:currentMember,getHomeId:()=>cloudHome?.id,mutate,render,open,toast,getAccessToken:async()=>session?.access_token,offerMiniUndo:(id,groupId)=>activityUI.offerMiniUndo(id,groupId),feedback:rect=>completionFeedback(document,'chore',rect),isBlocked:()=>busy||authBusy||loading||editingOpen()||inputFocused()});

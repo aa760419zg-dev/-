@@ -38,7 +38,7 @@ const artwork={
 const colorful=new Set(['home','money','pets','chores','health','mahjong','places']);
 export const iconNames=Object.freeze(Object.keys(artwork));
 export function icon(name){if(!Object.hasOwn(artwork,name))return '';return `<svg class="app-icon icon-${name} ${colorful.has(name)?'icon-color':'icon-tool'}" data-icon="${name}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${colorful.has(name)?'var(--icon-ink)':'currentColor'}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${artwork[name]}</svg>`;}
-export function categoryIcon(category){return icon(({money:'money',pet:'pets',chore:'chores',health:'health',mahjong:'mahjong'})[category]);}
+export function categoryIcon(category){return icon(({money:'money',pet:'pets',chore:'chores',health:'health',mahjong:'mahjong',places:'places'})[category]);}
 
 const illustrations={
  plant:`<ellipse cx="89" cy="96" rx="40" ry="3" fill="var(--home-fill)" stroke="none"/><path fill="var(--category-chore)" stroke="none" d="M90 59c-2-22-24-35-34-31 1 20 14 30 34 31Zm1-12c0-21 17-33 30-30 0 17-10 29-30 30Z"/><path d="M89 70V42m0 16L63 34m27 14 23-23"/><path fill="var(--home-door)" d="m67 67 6 24c1 4 31 4 33 0l6-24Z"/><path d="M63 66h53m-45 12h37"/>`,

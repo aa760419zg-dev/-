@@ -1,9 +1,10 @@
+import {placesTitle} from './places-model.js';
 import {playerName,mahjongTitle} from './mahjong-model.js';
 import {recurringPreview,expenseLines} from './ledger-model.js';
 import {choreCompletion} from './model.js';
 import {pendingPreventives,pendingVisits,doseSlotName} from './pets-model.js';
 // Read-only projection: legacy events are deliberately never consulted.
-export const categories={money:'收支',pet:'寵物',chore:'家務',health:'運動',mahjong:mahjongTitle};
+export const categories={money:'收支',pet:'寵物',chore:'家務',health:'運動',mahjong:mahjongTitle,places:placesTitle};
 export function calendarRecords(data,today,until){
  const rows=[];const pendingVax=new Set(pendingPreventives(data).map(r=>r.id)),pendingFollowups=new Set(pendingVisits(data).map(r=>r.id));const add=(category,collection,record,date,summary,planned=false,extra={})=>{if(/^\d{4}-\d{2}-\d{2}$/.test(date||''))rows.push({key:collection+':'+record.id+':'+date+':'+rows.length,category,collection,id:record.id,date,summary,planned,record,...extra});};
  const who=r=>data.members?.find(m=>m.userId===(r.personUserId||r.userId))||data.members?.find(m=>m.name===(r.person||r.by));
@@ -15,7 +16,8 @@ export function calendarRecords(data,today,until){
  for(const r of data.chores||[]){for(const h of r.history||[]){const done=choreCompletion(data,h);add('chore','chores',r,done.date,`${r.title} · ${done.name}完成`,false,{member:done.member});}if(r.next>=today)add('chore','chores',r,r.next,`${r.title} · 待處理`,true);else if(r.next)add('chore','chores',r,today,`${r.title} · 已逾期（${r.next}）`,true,{overdue:true});}
  for(const r of data.health||[])add('health','health',r,r.date,`${r.title||r.kind} · ${r.kind==='InBody'?(r.weight+' kg'):(r.minutes+' 分鐘')} · ${who(r)?.name||'未知成員'}`,false,{member:who(r)});
  for(const r of data.mahjong?.sessions||[])add('mahjong','mahjong',r,r.date,Object.entries(r.scores).map(([id,amount])=>playerName(data,data.mahjong.players.find(p=>p.id===id))+' '+(amount>0?'+':'')+Number(amount).toLocaleString('zh-TW')).join('・'));
+ for(const r of data.placeVisits||[]){const p=data.places?.find(p=>p.id===r.placeId);if(!p)continue;const names=r.participants.map(id=>{const member=data.members?.find(m=>m.userId===id);return (member?.name||'未知成員')+(r.ratings[id]!==undefined?' ★'+r.ratings[id]:'');}).join(' ');add('places','placeVisits',r,r.date,p.name+' · '+names,false,{searchText:[p.name,p.country,p.city,p.district,r.review||''].join(' ')});}
  return rows;
 }
 export function recordsOnDate(data,date,{today=date,filters=Object.keys(categories)}={}){return calendarRecords(data,today,date).filter(r=>r.date===date&&filters.includes(r.category));}
-export function searchRecords(data,query,{today,filters=Object.keys(categories)}={}){const q=query.trim().toLocaleLowerCase();if(!q)return [];return calendarRecords(data,today).filter(r=>filters.includes(r.category)&&(r.summary+' '+(r.category==='money'?expenseLines(r.record).map(line=>[line.category,line.subcategory].join(' ')).join(' '):'')+' '+Object.entries(r.record).filter(([k,v])=>typeof v==='string'&&!['id','petId','userId','personUserId'].includes(k)).map(([,v])=>v).join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));}
+export function searchRecords(data,query,{today,filters=Object.keys(categories)}={}){const q=query.trim().toLocaleLowerCase();if(!q)return [];return calendarRecords(data,today).filter(r=>filters.includes(r.category)&&(r.summary+' '+(r.searchText||'')+' '+(r.category==='money'?expenseLines(r.record).map(line=>[line.category,line.subcategory].join(' ')).join(' '):'')+' '+Object.entries(r.record).filter(([k,v])=>typeof v==='string'&&!['id','petId','userId','personUserId'].includes(k)).map(([,v])=>v).join(' ')).toLocaleLowerCase().includes(q)).sort((a,b)=>b.date.localeCompare(a.date));}

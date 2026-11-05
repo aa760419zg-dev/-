@@ -1,4 +1,4 @@
-import {validatePlaces,assertPlaceMutation} from './places-model.js';
+import {validatePlaces,assertPlaceMutation,newlyUnlocked} from './places-model.js';
 import {validateMahjong,mahjongTitle} from './mahjong-model.js';
 import {assertExerciseMutation} from './exercise-model.js';
 import {validateReimbursements,commonBalance,assertSettledEdit,migrationSummary} from './reimbursements.js';
@@ -48,10 +48,12 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
  if(!changes.length)return [];
  const root=changes.find(c=>c.collection==='places'&&!c.after)||changes.find(c=>c.collection==='settlements')||changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.before)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
  const rootId=id+':'+root.collection+':'+root.id;
+ const unlocked=changes.some(c=>c.collection==='placeVisits'&&c.after)?newlyUnlocked(before,data):[];
  const logs=changes.map(c=>{
   let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='petDoses'?'完成':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
   if(c.collection==='petDoses'&&!c.before&&!action)verb='完成';
   const entry={id:id+':'+c.collection+':'+c.id,at,userId,name:member.name,action:verb,area:areaFor(c),recordId:c.id,summary:summary||`${verb}${areaFor(c)}：${describe(c.after?data:before,c.collection,c.after||c.before)}`,before:clone(c.before),after:clone(c.after),collection:c.collection,beforeIndex:c.beforeIndex,groupId:id,rootId};
+  if(c.collection==='placeVisits'&&unlocked.length)entry.unlockedRegions=unlocked.map(r=>({country:r.country,city:r.city,district:r.district}));
   if(c.collection==='settlements'&&!summary){const s=c.after||c.before,recipient=(c.after?data:before).members?.find(m=>m.userId===s.memberUserId)?.name||'成員';entry.summary=c.after?member.name+' 幫'+recipient+'補款 NT$'+Number(s.amount).toLocaleString('zh-TW')+'（'+s.recordIds.length+' 筆）':'取消補款：'+recipient+' NT$'+Number(s.amount).toLocaleString('zh-TW');}
   if(!summary&&c.collection==='money'&&c.before&&c.after&&(c.before.reimbursement?.status||null)!==(c.after.reimbursement?.status||null)&&![...changes].some(c=>c.collection==='settlements')){const payer=data.members?.find(m=>m.userId===c.after.account)?.name||'成員';entry.summary=payer+'的'+(c.after.note||c.after.title||c.after.category)+'改為'+(c.after.reimbursement?.status==='pending'?'需要補款':'不需補款');}
   if(ledgerMigration){entry.summary='升級記帳分類與帳戶';entry.area='帳本';entry.systemMigration=true;}
