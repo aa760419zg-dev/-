@@ -2,5 +2,5 @@
 import topology from './vendor/taiwan-topology.js';
 import {feature} from './vendor/topojson.js';
 import {createTaiwanDistrictIndex} from './place-geometry.js';
-export const taiwanDistricts=createTaiwanDistrictIndex(feature(topology,topology.objects.towns).features);
+export const taiwanDistricts={...createTaiwanDistrictIndex(feature(topology,topology.objects.towns).features),counties:feature(topology,topology.objects.counties).features};
 export const locateTaiwanDistrict=(lat,lng)=>taiwanDistricts.locateTaiwanDistrict(lat,lng);
