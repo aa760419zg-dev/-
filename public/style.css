@@ -246,3 +246,37 @@ nav a{font-size:var(--text-md)}
  .exercise-toolbar{flex-wrap:nowrap;gap:4px;margin-bottom:8px;justify-content:space-between}.exercise-toolbar .health-members{flex-wrap:nowrap;gap:3px;min-width:0}.exercise-toolbar .member-pill{min-height:36px;max-width:76px;gap:4px;padding:5px 7px}.exercise-toolbar .member-pill .member-color{flex:none}.exercise-toolbar .member-pill>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.exercise-toolbar .page-month-picker{flex:none;margin:0;gap:2px}.exercise-toolbar .page-month-picker button{width:30px;min-width:30px;height:36px;min-height:36px;padding:4px}.exercise-toolbar .page-month-picker h2{font-size:var(--text-md);margin:0;min-width:42px;text-align:center}.exercise-month-full{display:none}.exercise-month-short{display:inline}
  .exercise-section{padding:10px 12px;margin:10px 0}.exercise-section>.section-title{margin-bottom:6px}.exercise-section>.section-title h2{font-size:var(--text-lg)}.exercise-section>.hint{margin:4px 0}.exercise-goal{padding:6px 8px}.exercise-goal .hint{margin:3px 0;font-size:var(--text-sm)}.goal-dots{margin:6px 0;min-height:20px}.exercise-goals+.hint{margin:5px 0}.exercise-day-note{margin:5px 0;padding:3px 7px;font-size:var(--text-sm)}.exercise-plan-notice{margin:4px 0;line-height:1.5}.exercise-weekdays{margin:6px 0;gap:4px}.exercise-weekdays button{min-height:36px;padding:4px 0}.exercise-plan-card #exercise-plan>.toolbar{margin:6px 0;gap:5px}.exercise-plan-card #exercise-plan>.toolbar button,.exercise-generate{min-height:34px;padding:5px 9px;font-size:var(--text-sm)}.exercise-preferences{padding-top:6px;margin-top:6px}.exercise-preferences>summary{min-height:24px;font-size:var(--text-sm)}.exercise-plan-item>summary{min-height:36px}.exercise-plan-item>summary>.subtle{margin-left:auto;min-height:32px;padding:4px 7px;font-size:var(--text-sm)}.mini-compact{gap:6px}.mini-compact .member-color{margin-right:3px}.mini-compact button{font-size:var(--text-sm)}.exercise-member-stats{margin:10px 0;gap:10px}.exercise-member-stats h3{margin-bottom:4px}.exercise-member-stats .exercise-stats{gap:5px 3px;padding:6px}.exercise-member-stats .exercise-stats strong{line-height:1.2}.exercise-member-stats .exercise-stats small{line-height:1.3}.exercise-calendar .day{min-height:38px;padding-top:3px;padding-bottom:2px;gap:0}.exercise-calendar .day-name{padding:4px 0}.exercise-calendar .exercise-calendar-marks{min-height:15px}.exercise-calendar .empty-health-day{height:0}.exercise-calendar .day small{line-height:1.2}.exercise-calendar+.hint{margin:5px 0}.body-metrics{gap:4px;margin-bottom:4px}.body-metrics button,.body-controls button{min-height:30px;padding:3px 7px;font-size:var(--text-sm)}.body-controls{flex-wrap:wrap;gap:4px;margin-bottom:0}.body-controls .body-modes{gap:4px}.inbody-charts{gap:0}.inbody-metric h3{display:none}.inbody-chart{height:120px;max-height:120px}.inbody-values p{margin:3px 0;line-height:1.4}.inbody-metric>.hint{margin:4px 0;line-height:1.5}.exercise-body-card>[data-exercise-inbody]{min-height:32px;padding:5px 8px;font-size:var(--text-sm)}.exercise-records{margin:10px 0;padding:10px 12px}.exercise-records .health-record{padding:8px 0}.exercise-records .health-record-note{font-size:var(--text-sm)}
 }
+
+/* Mahjong keeps the existing warm cards and dialog/bottom-sheet treatment. */
+:root { --category-mahjong: var(--category-chore); }
+.category-mahjong { --category: var(--category-mahjong); }
+.mj-heading-actions,.mj-years,.mj-dong-row,.mj-dong-input { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.mj-years { margin-bottom:16px; }
+.mj-session { display:flex; flex-direction:column; gap:8px; text-align:left; width:100%; background:transparent; color:var(--text); border:0; border-bottom:1px solid var(--line); padding:16px 0; font-size:var(--text-md); }
+.mj-session small,.mj-rank small { font-size:var(--text-sm); color:var(--muted); }
+.mj-rank { display:grid; grid-template-columns:32px 1fr auto; width:100%; gap:8px; background:transparent; border:0; border-bottom:1px solid var(--line); padding:14px 0; text-align:left; color:inherit; }
+.mj-rank small { grid-column:2 / 4; }
+.mj-rank strong { display:flex; align-items:center; gap:6px; }
+.mj-dong-row { padding:10px 0; }
+.mj-sheet { width:min(620px,calc(100% - 24px)); max-height:90dvh; overflow:auto; }
+.mj-content { padding:4px 4px 16px; }
+#mj-player-options { display:flex; flex-wrap:wrap; gap:8px; max-height:180px; overflow:auto; margin:12px 0; }
+.mj-player-choice { display:flex; align-items:center; gap:5px; min-height:44px; padding:4px 8px; background:var(--surface); border-radius:12px; }
+.mj-player-choice input { width:18px; }
+.mj-score { display:grid; grid-template-columns:minmax(70px,1fr) minmax(80px,1fr); align-items:center; gap:6px; padding:8px 0; }
+.mj-score input { min-width:0; cursor:pointer; text-align:right; }
+.mj-score [data-mj-suggestion] { grid-column:1 / -1; text-align:right; }
+.mj-warning { color:var(--accent-text); }
+.mj-chart { width:100%; max-height:240px; overflow:visible; }
+.mj-chart text { fill:var(--muted); font-size:var(--text-xs); }
+.mj-keys { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+.mj-keys button { min-height:48px; font-size:var(--text-lg); touch-action:manipulation; }
+.mj-keys button:active { transform:scale(.95); background:var(--accent-soft); }
+#mj-expression { font-size:var(--text-size-24); }
+.mj-player-management { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+#mj-import-preview { white-space:pre-wrap; overflow-wrap:anywhere; }
+@media(max-width:759px) {
+ .mj-desktop-add { display:none; }
+ .mahjong-sheet { position:fixed; margin:auto 0 0; bottom:0; width:100%; max-width:none; max-height:90dvh; border-radius:22px 22px 0 0; padding-bottom:calc(16px + env(safe-area-inset-bottom)); }
+ .mj-rank,.mj-session { overflow-wrap:anywhere; }
+}

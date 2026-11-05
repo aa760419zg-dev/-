@@ -1,21 +1,24 @@
+import {validateMahjong,mahjongTitle} from './mahjong-model.js';
 import {assertExerciseMutation} from './exercise-model.js';
 import {validateReimbursements,commonBalance,assertSettledEdit,migrationSummary} from './reimbursements.js';
-export const areas={exercisePlans:'運動',settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
+export const areas={mahjongPlayers:mahjongTitle,mahjongSessions:mahjongTitle,mahjongSettings:mahjongTitle,exercisePlans:'運動',settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
 const clone=value=>value==null?null:structuredClone(value);
 export function equal(a,b){
  if(a===b)return true;if(a==null||b==null||typeof a!=='object'||typeof b!=='object')return false;
  if(Array.isArray(a)||Array.isArray(b))return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((v,i)=>equal(v,b[i]));
  const ak=Object.keys(a).filter(k=>a[k]!==undefined),bk=Object.keys(b).filter(k=>b[k]!==undefined);return ak.length===bk.length&&ak.every(k=>Object.hasOwn(b,k)&&equal(a[k],b[k]));
 }
+const recordsFor=(data,key)=>key==='mahjongPlayers'?(data.mahjong?.players||[]):key==='mahjongSessions'?(data.mahjong?.sessions||[]):data[key]||[];
 const recordKey=(collection,record)=>collection==='members'?record.userId:record.id;
 export function snapshot(data){const {activity,...document}=data;return clone(document);}
 const accountSettings=data=>({opening:data.opening,threshold:data.threshold,...(data.settings!==undefined?{preferences:clone(data.settings)}:{})});
 export function changesBetween(before,after){
  const changes=[];
  for(const collection of Object.keys(areas)){
+  if(collection==='mahjongSettings'){if(!equal(before.mahjong?.settings??null,after.mahjong?.settings??null))changes.push({collection,id:'settings',before:clone(before.mahjong?.settings),after:clone(after.mahjong?.settings)});continue;}
   if(collection==='exercisePlans'){for(const id of new Set([...Object.keys(before.exercisePlans||{}),...Object.keys(after.exercisePlans||{})]))if(!equal(before.exercisePlans?.[id]??null,after.exercisePlans?.[id]??null))changes.push({collection,id,before:clone(before.exercisePlans?.[id]),after:clone(after.exercisePlans?.[id])});continue;}
-  const old=new Map((before[collection]||[]).map(x=>[recordKey(collection,x),x])),now=new Map((after[collection]||[]).map(x=>[recordKey(collection,x),x]));
-  for(const id of new Set([...old.keys(),...now.keys()]))if(!equal(old.get(id)??null,now.get(id)??null))changes.push({collection,id,before:clone(old.get(id)),after:clone(now.get(id)),beforeIndex:(before[collection]||[]).findIndex(x=>recordKey(collection,x)===id)});
+  const old=new Map(recordsFor(before,collection).map(x=>[recordKey(collection,x),x])),now=new Map(recordsFor(after,collection).map(x=>[recordKey(collection,x),x]));
+  for(const id of new Set([...old.keys(),...now.keys()]))if(!equal(old.get(id)??null,now.get(id)??null))changes.push({collection,id,before:clone(old.get(id)),after:clone(now.get(id)),beforeIndex:recordsFor(before,collection).findIndex(x=>recordKey(collection,x)===id)});
  }
  const old=accountSettings(before),now=accountSettings(after);if(!equal(old,now))changes.push({collection:'settings',id:'account',before:old,after:now});
  return changes;
@@ -23,6 +26,7 @@ export function changesBetween(before,after){
 export function areaFor(change){const r=change.after||change.before;return change.collection==='events'&&r?.type==='休假'?'休假':change.collection==='health'&&r?.kind==='InBody'?'InBody':areas[change.collection]||'帳戶設定';}
 export function describe(data,collection,record){
  if(!record)return '';
+ if(collection==='mahjongPlayers')return record.name;if(collection==='mahjongSessions')return record.date;if(collection==='mahjongSettings')return '排行門檻';
  const pet=data.petProfiles?.find(p=>p.id===record.petId)?.name||record.pet||'';const person=data.members?.find(m=>m.userId===record.personUserId)?.name||record.person;
  if(collection==='petProfiles'||collection==='categories')return record.name;if(collection==='recurring')return [record.template?.note||record.template?.title||record.template?.category,'NT$'+Number(record.template?.amount||0).toLocaleString('zh-TW')].join(' · ');
  if(collection==='money'&&record.splits)return (record.note||record.title||'拆分 '+record.splits.length+' 項')+' NT$'+Number(record.amount||0).toLocaleString('zh-TW')+'（拆分 '+record.splits.length+' 項）';
@@ -33,7 +37,7 @@ export function describe(data,collection,record){
  return [pet,record.date,record.title||record.drug||record.item||record.name||(collection==='petWeights'?record.weight+' kg':collection==='members'?record.name:'帳戶設定')].filter(Boolean).join(' · ');
 }
 // 在 mutate 的可重試 callback 中呼叫，與資料一起交給 family_save。
-export function appendActivity(data,before,{id,at,userId,action,summary,restoreOf,importing=false,ledgerMigration=false,reimbursementMigration=false}){
+export function appendActivity(data,before,{id,at,userId,action,summary,restoreOf,importing=false,ledgerMigration=false,reimbursementMigration=false,mahjongImport=false}){
  const member=before.members?.find(x=>x.userId===userId)||data.members?.find(x=>x.userId===userId);if(!member)throw Error('找不到操作者成員身分');
  if(reimbursementMigration)return [{id:id+':reimbursement-migration',at,userId,name:member.name,action:'編輯',area:'帳本',collection:'document',recordId:'reimbursement-migration',summary:migrationSummary,before:null,after:{version:1},systemMigration:true,groupId:id,rootId:id+':reimbursement-migration'}];
  let changes=changesBetween(before,data);
@@ -54,7 +58,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
   if(entry.id===rootId){if(changes.length>1||(c.collection==='petProfiles'&&!c.after))entry.changes=clone(changes);if(c.collection==='petProfiles'&&!c.after){const bundle={pet:clone(c.before)};for(const other of changes)if(other!==c&&other.before&&!other.after)(bundle[other.collection]??=[]).push(clone(other.before));entry.before=bundle;}}
   return entry;
  });
- logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));return logs.length>100?logs.filter(e=>e.id===rootId):logs;
+ logs.sort((a,b)=>Number(a.id===rootId)-Number(b.id===rootId));return mahjongImport?[logs.find(e=>e.id===rootId)]:logs.length>100?logs.filter(e=>e.id===rootId):logs;
 }
 export function deleteRecord(data,collection,id){
  const record=(data[collection]||[]).find(x=>recordKey(collection,x)===id);if(!record)throw Error('紀錄已被刪除');
@@ -78,7 +82,7 @@ export function visibleActivity(entry,userId){
  return true;
 }
 export function rootEntry(data,id){const entry=data.activity?.find(x=>x.id===id);if(!entry)return null;return data.activity.find(x=>x.id===(entry.rootId||entry.id))||entry;}
-export function currentFor(data,change){if(change.collection==='exercisePlans')return clone(data.exercisePlans?.[change.id]);if(change.collection==='settings')return accountSettings(data);if(change.collection==='document')return snapshot(data);return clone((data[change.collection]||[]).find(x=>recordKey(change.collection,x)===change.id));}
+export function currentFor(data,change){if(change.collection==='mahjongSettings')return clone(data.mahjong?.settings);if(change.collection==='exercisePlans')return clone(data.exercisePlans?.[change.id]);if(change.collection==='settings')return accountSettings(data);if(change.collection==='document')return snapshot(data);return clone(recordsFor(data,change.collection).find(x=>recordKey(change.collection,x)===change.id));}
 export function restoreState(data,entry){return (entry.changes||[{collection:entry.collection,id:entry.recordId,before:entry.before,after:entry.after,beforeIndex:entry.beforeIndex}]).map(c=>currentFor(data,c));}
 export function archivedActivity(entry){return entry?.collection==='events'||entry?.changes?.some(c=>c.collection==='events');}
 export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entries=data.activity||[]}={}){
@@ -95,11 +99,12 @@ export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entrie
   if(!Object.hasOwn(areas,change.collection)&&!['settings','document'].includes(change.collection))throw Error('不支援還原這個資料類型');const target=clone(change.before);
   if(change.collection==='settings'){restored.opening=target.opening;restored.threshold=target.threshold;if(Object.hasOwn(target,'preferences'))restored.settings=clone(target.preferences);else if(Object.hasOwn(change.after||{},'preferences'))delete restored.settings;continue;}
   if(change.collection==='document'){const events=clone(restored.events);for(const k of Object.keys(restored))delete restored[k];Object.assign(restored,snapshot(target));restored.events=events;continue;}
+  if(change.collection.startsWith('mahjong')){restored.mahjong??={players:[],sessions:[],settings:{minGames:3}};if(change.collection==='mahjongSettings'){restored.mahjong.settings=target||{minGames:3};continue;}const list=change.collection==='mahjongPlayers'?restored.mahjong.players:restored.mahjong.sessions,index=list.findIndex(r=>r.id===change.id);if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.push(target);continue;}
   if(change.collection==='exercisePlans'){restored.exercisePlans??={};if(target==null)delete restored.exercisePlans[change.id];else restored.exercisePlans[change.id]=target;continue;}
   const list=restored[change.collection]??=[];const index=list.findIndex(x=>recordKey(change.collection,x)===change.id);
   if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.splice(Number.isInteger(change.beforeIndex)?Math.min(change.beforeIndex,list.length):list.length,0,target);
  }
- assertExerciseMutation(data,restored,userId);validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
+ validateMahjong(restored);assertExerciseMutation(data,restored,userId);validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
  return true;
 }
 export function changedFields(before,after,prefix=''){

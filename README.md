@@ -351,3 +351,13 @@ AI 失敗排查：新請求進行中會隱藏上一次範本提示，完成後�
 運動足跡捲動修正：點日期不再自動捲到頁尾，選取狀態與焦點留在月曆；當日清單在月曆下方、InBody 上方展開。「顯示整個月」沿用這個位置，切換成員或月份才回到預設收合歷史的版面。僅修改呈現，不寫入家庭資料。
 
 Flash 低延遲設定：Gemini 3 Flash 與 Flash 最新別名使用 thinkingLevel=MINIMAL；2.5 Flash 使用 thinkingBudget=0，並要求精簡文字。依據 Google 官方 [Thinking 範例](https://github.com/google-gemini/cookbook/blob/main/quickstarts/Get_started_thinking.ipynb)。若模型以 400 拒絕推理設定，只移除該設定相容重試一次；兩次共用原本的 15 秒期限，不因重試延長。429／503 不重試，仍回範本；此設定不能保證 Google 服務忙碌時不逾時。
+
+### 🀄龍虎榜🀄
+
+電腦版左側選單、手機「更多」可進入；手機浮動＋／電腦「記一場」新增牌局。東錢獨立記錄，不連動家庭帳本。每場 3～5 人，輸贏與東錢使用 moneyCents 以分相加，平衡才可存檔。最後一位空白金額可點建議帶入；數字鍵盤沿用 calculateAmount，支援正負及算式。
+
+排行可選年份／全部；少於設定場數的玩家不參與名次。打平算場次但不算勝率分母，連勝遇打平不增加也不中斷。點玩家可看累計曲線、同桌紀錄及修改／隱藏玩家；連結 App 成員的名字與色點隨 document.members 即時顯示。首頁月曆與當日清單也包含牌局。
+
+設定 → 匯入舊紀錄，選擇格式為 `our-home-mahjong`、version 1 的 JSON（players、sessions）；先預覽新增筆數與期間，確認後才寫入。相同 id 跳過；任何一場不合格則整批拒絕。檔案內容只在瀏覽器記憶體預覽並存入家庭文件，不加入原始碼或預設資料。一般玩家可在新增／編輯時選填連結家庭成員。
+
+`document.mahjong` 為 `{players:[], sessions:[], settings:{minGames:3}}`；舊文件缺少時以空資料相容，完整備份會包含此欄位。不需新增資料表或執行 SQL。所有寫入經 mutate／revision 衝突重試並存入 family_activity；平常逐筆記錄玩家、牌局與排行設定變更，匯入合併為一筆且附完整 changes，刪除提供 5 秒復原。重試一律從最新文件依 id 找紀錄。測試只用自行建立的虛構資料，不含匯入的真實玩家與牌局。

@@ -1,6 +1,7 @@
 // Original 24 × 24 artwork. All UI icons share the same rounded stroke;
 // editable category/chore emoji and data visualizations are intentionally separate.
 const artwork={
+ mahjong:`<rect x="5.5" y="3.5" width="14" height="18" rx="3" fill="var(--category-mahjong)" stroke="none"/><rect x="4.5" y="2.5" width="14" height="18" rx="3"/><path d="M8 8h7v5H8zM11.5 5.5v12"/>`,
  home:`<path fill="var(--home-fill)" stroke="none" d="M4.4 10.4 12.5 4l7.7 6.6v9.1H4.4Z"/><path fill="var(--home-door)" stroke="none" d="M10.4 14.2h4.2v6.1h-4.2z"/><path d="m2.8 10.4 9.2-7.3 9.2 7.3M5 9.3v11h14V9.3M10 20.3v-6.4h4v6.4"/>`,
  money:`<path fill="var(--category-money)" stroke="none" d="M4.2 11.2h10.3v8H4.2z"/><path d="M19 8V5.2a1.4 1.4 0 0 0-1.6-1.4L5.1 5.9A2.4 2.4 0 0 0 3 8.3v9.4A2.3 2.3 0 0 0 5.3 20H19a2 2 0 0 0 2-2V9.9A1.9 1.9 0 0 0 19.1 8H5.5"/><path fill="var(--surface)" d="M17.2 11h4v5h-4a2.5 2.5 0 0 1 0-5Z"/><path d="M17.8 13.5h.2"/>`,
  pets:`<path fill="var(--category-pet)" stroke="none" d="M9.4 11.9c1.5-2.1 4.4-2 5.8.2 1.1 1.7 3.4 2.8 3.2 5-.3 2.6-2.9 3-5.7 2.5-2.2-.4-4.3 1.1-5.8-.5-2.4-2.5.7-4.8 2.5-7.2Z"/><path d="M9.1 12.4c1.4-2.5 4.4-2.5 5.8 0 1.1 1.8 3.3 2.4 3.3 4.6 0 2.8-2.8 3.2-6.2 2.4-3.4.8-6.2.4-6.2-2.4 0-2.2 2.2-2.8 3.3-4.6Z"/><ellipse cx="8.7" cy="6.7" rx="1.9" ry="2.7"/><ellipse cx="15.3" cy="6.7" rx="1.9" ry="2.7"/><ellipse cx="3.8" cy="10.2" rx="1.6" ry="2.2" transform="rotate(-20 3.8 10.2)"/><ellipse cx="20.2" cy="10.2" rx="1.6" ry="2.2" transform="rotate(20 20.2 10.2)"/>`,
@@ -22,10 +23,10 @@ const artwork={
  pin:`<path d="m13 3 7 7-3 1.5-3.5 5-2.5-2.5-6 6m3.5-8.5L6 9l5-3.5L13 3Z"/>`,
  calculator:`<rect x="5" y="2.8" width="14" height="18.4" rx="2.3"/><path d="M8 6.5h8M8 11h1m6 0h1m-8 4h1m6 0h1m-8 3h1m6 0h1"/>`
 };
-const colorful=new Set(['home','money','pets','chores','health']);
+const colorful=new Set(['home','money','pets','chores','health','mahjong']);
 export const iconNames=Object.freeze(Object.keys(artwork));
 export function icon(name){if(!Object.hasOwn(artwork,name))return '';return `<svg class="app-icon icon-${name} ${colorful.has(name)?'icon-color':'icon-tool'}" data-icon="${name}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${colorful.has(name)?'var(--icon-ink)':'currentColor'}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${artwork[name]}</svg>`;}
-export function categoryIcon(category){return icon(({money:'money',pet:'pets',chore:'chores',health:'health'})[category]);}
+export function categoryIcon(category){return icon(({money:'money',pet:'pets',chore:'chores',health:'health',mahjong:'mahjong'})[category]);}
 
 const illustrations={
  plant:`<ellipse cx="89" cy="96" rx="40" ry="3" fill="var(--home-fill)" stroke="none"/><path fill="var(--category-chore)" stroke="none" d="M90 59c-2-22-24-35-34-31 1 20 14 30 34 31Zm1-12c0-21 17-33 30-30 0 17-10 29-30 30Z"/><path d="M89 70V42m0 16L63 34m27 14 23-23"/><path fill="var(--home-door)" d="m67 67 6 24c1 4 31 4 33 0l6-24Z"/><path d="M63 66h53m-45 12h37"/>`,
