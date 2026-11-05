@@ -518,7 +518,6 @@ nav a{font-size:var(--text-md)}
  .atlas-composition { display:flex; flex-direction:column; gap:8px; }
  .atlas-picture,.atlas-region-card { width:100%; }
  .atlas-intro p { font-size:var(--text-md); letter-spacing:0; }
- .atlas-picture>.places-map-filter { right:0; top:0; }
  .atlas-region-card { padding:14px; border-radius:18px; }
  .atlas-region-heading { gap:6px; }.atlas-region-heading>div { min-width:0; }
  .atlas-region-chooser select { max-width:170px; }
@@ -535,3 +534,6 @@ nav a{font-size:var(--text-md)}
 @media(max-width:759px) { .atlas-couple { width:108px; height:72px; } .atlas-intro { gap:10px; justify-content:space-between; } .atlas-intro p { line-height:1.8; } }
 .places-atlas-page .places-progress { border:0; padding:0; background:transparent; }
 @media(min-width:760px) { .places-atlas { max-height:640px; } }
+
+.places-toolbar>.places-map-filter { position:relative; top:auto; right:auto; margin-left:auto; }
+.places-toolbar>.places-map-filter .places-filter-popover { position:absolute; right:0; top:calc(100% + 6px); margin-top:0; }
