@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test",
-    "check": "node --check public/mahjong-model.js && node --check public/mahjong-ui.js && node --check api/exercise-plan.js && node --check public/exercise-plan.js && node --check public/exercise-model.js && node --check public/exercise-ui.js && node --check public/reimbursements.js && node --check public/navigation.js && node --check public/icons.js && node --check public/feedback.js && node --check public/smart-model.js && node --check public/ledger-model.js && node --check public/ledger-ui.js && node --check public/dates.js && node --check public/mobile-ui.js && node --check public/activity-store.js && node --check public/record-calendar.js && node --check public/record-calendar-ui.js && node --check public/app.js && node --check public/pet-manager.js && node --check public/pets-model.js && node --check public/mutations.js && node --check public/realtime.js && node --check public/members.js && node --check public/activity.js && node --check public/activity-ui.js && node --check server.js",
+    "check": "node --check api/place-from-link.js && node --check public/places-model.js && node --check public/places-ui.js && node --check public/place-geometry.js && node --check public/place-geography.js && node --check public/place-search.js && node --check public/place-photos.js && node --check public/mahjong-model.js && node --check public/mahjong-ui.js && node --check api/exercise-plan.js && node --check public/exercise-plan.js && node --check public/exercise-model.js && node --check public/exercise-ui.js && node --check public/reimbursements.js && node --check public/navigation.js && node --check public/icons.js && node --check public/feedback.js && node --check public/smart-model.js && node --check public/ledger-model.js && node --check public/ledger-ui.js && node --check public/dates.js && node --check public/mobile-ui.js && node --check public/activity-store.js && node --check public/record-calendar.js && node --check public/record-calendar-ui.js && node --check public/app.js && node --check public/pet-manager.js && node --check public/pets-model.js && node --check public/mutations.js && node --check public/realtime.js && node --check public/members.js && node --check public/activity.js && node --check public/activity-ui.js && node --check server.js",
     "build": "node scripts/build.js",
     "prestart": "npm run build"
   },
@@ -14,7 +14,10 @@
     "node": ">=22"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.118.0"
+    "@supabase/supabase-js": "^2.118.0",
+    "leaflet": "^1.9.4",
+    "taiwan-atlas": "^2021.9.20",
+    "topojson-client": "^3.1.0"
   },
   "devDependencies": {
     "@electric-sql/pglite": "^0.5.12",

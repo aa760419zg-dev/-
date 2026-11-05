@@ -7,6 +7,9 @@
   "functions": {
     "api/exercise-plan.js": {
       "maxDuration": 30
+    },
+    "api/place-from-link.js": {
+      "maxDuration": 15
     }
   }
 }

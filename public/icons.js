@@ -1,6 +1,18 @@
 // Original 24 × 24 artwork. All UI icons share the same rounded stroke;
 // editable category/chore emoji and data visualizations are intentionally separate.
 const artwork={
+ "place-food":`<path d="M7 3v7m-3-7v4c0 4 6 4 6 0V3M7 11v10M18 21V3c-4 2-5 8 0 8"/>`,
+ "place-coffee":`<path d="M4 7h12v8a5 5 0 0 1-10 0V7Zm12 1h2a3 3 0 0 1 0 6h-2M3 21h16M8 3v1m4-1v1"/>`,
+ "place-cake":`<path d="M4 12h16v9H4zM4 15c2-3 4 3 6 0s4 3 6 0 4 0 4 0M12 12V6m0-4c3 3-3 3 0 0Z"/>`,
+ "place-snack":`<path d="M3 12h18c-1 7-4 9-9 9s-8-2-9-9ZM6 6h12M8 3v6m4-6v6m4-6v6"/>`,
+ "place-bar":`<path d="m4 3 8 10 8-10H4ZM12 13v8m-4 0h8M7 7h10"/>`,
+ "place-view":`<path d="m2 20 7-13 5 8 3-5 5 10H2ZM7 11l2 2 2-2M16 4h3"/>`,
+ "place-trail":`<path d="M14 5a2 2 0 1 0 0-.1M13 8l-3 6 4 2 1 5M10 14l-5 7m7-11 4 3 4-1M7 10l-2 4m15-1v8"/>`,
+ "place-art":`<path d="M3 4h18v16H3zM7 16l4-5 4 3 3-4m-9-3h.1"/>`,
+ "place-shopping":`<path d="M5 8h14l2 13H3L5 8ZM8 8V6a4 4 0 0 1 8 0v2"/>`,
+ "place-stay":`<path d="M3 21V5m0 11h18v5M4 10h5v6m0-7h10a2 2 0 0 1 2 2v5M6 8h.1"/>`,
+
+ places:`<path fill="var(--category-pet)" stroke="none" d="M6 9a6 6 0 0 1 12 0c0 4-6 10-6 10S6 13 6 9Z"/><path d="M12 22S4.5 14.5 4.5 8.8a7.5 7.5 0 0 1 15 0C19.5 14.5 12 22 12 22Z"/><circle cx="12" cy="8.5" r="2.5"/>`,
  mahjong:`<rect x="5.5" y="3.5" width="14" height="18" rx="3" fill="var(--category-mahjong)" stroke="none"/><rect x="4.5" y="2.5" width="14" height="18" rx="3"/><path fill="var(--primary)" stroke="none" d="M7.29 8.6C7.6 8.78 7.97 9.03 8.25 9.24C7.7 9.58 7.11 9.86 6.5 10.04C6.71 10.26 7.01 10.69 7.17 10.96C7.42 10.87 7.66 10.77 7.9 10.65V10.73H9.64V11.46H7.7C7.57 12.31 7.34 13.36 7.15 14.07L8.16 14.22L8.23 13.97H9.58C9.51 14.78 9.42 15.14 9.29 15.27C9.18 15.35 9.07 15.36 8.89 15.36C8.67 15.36 8.14 15.35 7.62 15.31C7.81 15.59 7.96 16.04 7.98 16.37C8.54 16.39 9.08 16.38 9.38 16.36C9.75 16.33 10 16.25 10.22 16C10.5 15.71 10.63 15.02 10.74 13.5C10.76 13.35 10.77 13.06 10.77 13.06H8.43L8.56 12.39H9.64V12.52H10.75V12.07C10.98 12.25 11.29 12.57 11.4 12.74C12.27 12.19 12.52 11.4 12.56 10.66H13.49V11.27C13.49 11.86 13.57 12.07 13.75 12.24C13.9 12.4 14.2 12.47 14.44 12.47C14.58 12.47 14.81 12.47 14.97 12.47C15.13 12.47 15.36 12.44 15.48 12.4C15.66 12.34 15.79 12.24 15.87 12.11C15.95 11.98 16 11.7 16.03 11.43C15.74 11.33 15.34 11.13 15.15 10.97C15.14 11.19 15.13 11.36 15.11 11.44C15.09 11.52 15.04 11.55 15.01 11.57C14.98 11.58 14.93 11.58 14.88 11.58C14.82 11.58 14.74 11.58 14.7 11.58C14.64 11.58 14.6 11.57 14.58 11.54C14.56 11.51 14.55 11.42 14.55 11.29V10.32C14.93 10.52 15.33 10.68 15.75 10.82C15.91 10.53 16.24 10.07 16.5 9.84C15.98 9.7 15.48 9.51 15.03 9.27C15.42 9.01 15.86 8.67 16.24 8.33L15.33 7.7C15.04 8.01 14.59 8.44 14.2 8.76C14 8.61 13.81 8.45 13.63 8.29C14.02 8 14.47 7.65 14.89 7.28L13.98 6.65C13.75 6.93 13.37 7.31 13.02 7.6C12.77 7.28 12.57 6.95 12.41 6.58L11.4 6.87C11.91 8.02 12.65 8.99 13.59 9.71H11.52V10.45C11.52 10.92 11.42 11.45 10.75 11.88V9.77H9.39C10.24 9.13 10.94 8.31 11.37 7.28L10.59 6.9L10.4 6.95H7.63V7.93H9.71C9.54 8.17 9.33 8.39 9.1 8.6C8.79 8.37 8.34 8.12 8 7.94ZM14.03 13.62C13.83 13.92 13.59 14.19 13.31 14.42C12.98 14.18 12.72 13.92 12.52 13.62ZM11.2 12.77V13.62H12.16L11.53 13.79C11.76 14.24 12.05 14.63 12.41 14.98C11.87 15.23 11.25 15.41 10.58 15.51C10.78 15.74 11.01 16.15 11.12 16.42C11.92 16.25 12.65 16 13.27 15.65C13.87 16.01 14.56 16.26 15.37 16.42C15.53 16.11 15.84 15.65 16.09 15.41C15.4 15.32 14.78 15.16 14.26 14.95C14.79 14.43 15.2 13.79 15.46 12.98L14.78 12.74L14.58 12.77Z"/>`,
  home:`<path fill="var(--home-fill)" stroke="none" d="M4.4 10.4 12.5 4l7.7 6.6v9.1H4.4Z"/><path fill="var(--home-door)" stroke="none" d="M10.4 14.2h4.2v6.1h-4.2z"/><path d="m2.8 10.4 9.2-7.3 9.2 7.3M5 9.3v11h14V9.3M10 20.3v-6.4h4v6.4"/>`,
  money:`<path fill="var(--category-money)" stroke="none" d="M4.2 11.2h10.3v8H4.2z"/><path d="M19 8V5.2a1.4 1.4 0 0 0-1.6-1.4L5.1 5.9A2.4 2.4 0 0 0 3 8.3v9.4A2.3 2.3 0 0 0 5.3 20H19a2 2 0 0 0 2-2V9.9A1.9 1.9 0 0 0 19.1 8H5.5"/><path fill="var(--surface)" d="M17.2 11h4v5h-4a2.5 2.5 0 0 1 0-5Z"/><path d="M17.8 13.5h.2"/>`,
@@ -23,7 +35,7 @@ const artwork={
  pin:`<path d="m13 3 7 7-3 1.5-3.5 5-2.5-2.5-6 6m3.5-8.5L6 9l5-3.5L13 3Z"/>`,
  calculator:`<rect x="5" y="2.8" width="14" height="18.4" rx="2.3"/><path d="M8 6.5h8M8 11h1m6 0h1m-8 4h1m6 0h1m-8 3h1m6 0h1"/>`
 };
-const colorful=new Set(['home','money','pets','chores','health','mahjong']);
+const colorful=new Set(['home','money','pets','chores','health','mahjong','places']);
 export const iconNames=Object.freeze(Object.keys(artwork));
 export function icon(name){if(!Object.hasOwn(artwork,name))return '';return `<svg class="app-icon icon-${name} ${colorful.has(name)?'icon-color':'icon-tool'}" data-icon="${name}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="${colorful.has(name)?'var(--icon-ink)':'currentColor'}" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${artwork[name]}</svg>`;}
 export function categoryIcon(category){return icon(({money:'money',pet:'pets',chore:'chores',health:'health',mahjong:'mahjong'})[category]);}
@@ -41,3 +53,5 @@ const illustrations={
 };
 export const illustrationNames=Object.freeze(Object.keys(illustrations));
 export function illustration(name){if(!Object.hasOwn(illustrations,name))return '';return `<svg class="empty-illustration illustration-${name}" data-illustration="${name}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 110" fill="none" stroke="var(--tea)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${illustrations[name]}</svg>`;}
+
+export function placeTypeIcon(type){return icon(({餐廳:"place-food",咖啡廳:"place-coffee",甜點:"place-cake",小吃:"place-snack",酒吧:"place-bar",景點:"place-view",步道:"place-trail",展覽:"place-art",購物:"place-shopping",住宿:"place-stay"})[type]);}

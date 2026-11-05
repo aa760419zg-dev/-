@@ -1,7 +1,8 @@
+import {validatePlaces,assertPlaceMutation} from './places-model.js';
 import {validateMahjong,mahjongTitle} from './mahjong-model.js';
 import {assertExerciseMutation} from './exercise-model.js';
 import {validateReimbursements,commonBalance,assertSettledEdit,migrationSummary} from './reimbursements.js';
-export const areas={mahjongPlayers:mahjongTitle,mahjongSessions:mahjongTitle,mahjongSettings:mahjongTitle,exercisePlans:'運動',settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
+export const areas={places:'📍吃喝玩樂',placeVisits:'📍吃喝玩樂',mahjongPlayers:mahjongTitle,mahjongSessions:mahjongTitle,mahjongSettings:mahjongTitle,exercisePlans:'運動',settlements:'帳本',money:'帳本',categories:'分類',recurring:'固定收支',events:'行程',chores:'家務',petProfiles:'寵物資料',petWeights:'體重',petMedications:'用藥計畫',petDoses:'餵藥',petVisits:'就診',petPreventives:'預防針',pets:'飲食觀察',health:'運動',members:'帳戶設定'};
 const clone=value=>value==null?null:structuredClone(value);
 export function equal(a,b){
  if(a===b)return true;if(a==null||b==null||typeof a!=='object'||typeof b!=='object')return false;
@@ -26,6 +27,7 @@ export function changesBetween(before,after){
 export function areaFor(change){const r=change.after||change.before;return change.collection==='events'&&r?.type==='休假'?'休假':change.collection==='health'&&r?.kind==='InBody'?'InBody':areas[change.collection]||'帳戶設定';}
 export function describe(data,collection,record){
  if(!record)return '';
+ if(collection==='places')return [record.name,record.city,record.district].join(' · ');if(collection==='placeVisits')return [data.places?.find(p=>p.id===record.placeId)?.name||'地點',record.date,'造訪'].join(' · ');
  if(collection==='mahjongPlayers')return record.name;if(collection==='mahjongSessions')return record.date;if(collection==='mahjongSettings')return '排行門檻';
  const pet=data.petProfiles?.find(p=>p.id===record.petId)?.name||record.pet||'';const person=data.members?.find(m=>m.userId===record.personUserId)?.name||record.person;
  if(collection==='petProfiles'||collection==='categories')return record.name;if(collection==='recurring')return [record.template?.note||record.template?.title||record.template?.category,'NT$'+Number(record.template?.amount||0).toLocaleString('zh-TW')].join(' · ');
@@ -44,7 +46,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
  if(ledgerMigration){if(equal(before,data))return [];changes=[{collection:'document',id:'finance-migration',before:snapshot(before),after:snapshot(data)}];}
  if(importing)changes=[{collection:'document',id:'backup',before:snapshot(before),after:snapshot(data)}];
  if(!changes.length)return [];
- const root=changes.find(c=>c.collection==='settlements')||changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.before)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
+ const root=changes.find(c=>c.collection==='places'&&!c.after)||changes.find(c=>c.collection==='settlements')||changes.find(c=>c.collection==='petProfiles'&&!c.after)||changes.find(c=>c.collection==='petMedications'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.after)||changes.find(c=>c.collection==='petVisits'&&!c.before)||changes.find(c=>c.collection==='petVisits')||changes.find(c=>c.collection==='members'||c.collection==='settings')||changes[0];
  const rootId=id+':'+root.collection+':'+root.id;
  const logs=changes.map(c=>{
   let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='petDoses'?'完成':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
@@ -62,6 +64,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
 }
 export function deleteRecord(data,collection,id){
  const record=(data[collection]||[]).find(x=>recordKey(collection,x)===id);if(!record)throw Error('紀錄已被刪除');
+ if(collection==='places')data.placeVisits=(data.placeVisits||[]).filter(v=>v.placeId!==id);
  if(collection==='money')assertSettledEdit(record,null);if(collection==='settlements')throw Error('請使用取消補款');
  const relatedVisits=collection==='petProfiles'?(data.petVisits||[]).filter(v=>v.petId===id).map(v=>v.id):collection==='petVisits'?[id]:[];for(const r of data.money||[])if(relatedVisits.includes(r.visitId)||relatedVisits.some(v=>r.id==='pet-visit-'+v))assertSettledEdit(r,null);
  const visits=new Set(),plans=new Set();
@@ -104,7 +107,7 @@ export function restoreActivity(data,id,userId,{confirm=()=>true,ask=true,entrie
   const list=restored[change.collection]??=[];const index=list.findIndex(x=>recordKey(change.collection,x)===change.id);
   if(target==null){if(index>=0)list.splice(index,1);}else if(index>=0)list[index]=target;else list.splice(Number.isInteger(change.beforeIndex)?Math.min(change.beforeIndex,list.length):list.length,0,target);
  }
- validateMahjong(restored);assertExerciseMutation(data,restored,userId);validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
+ validatePlaces(restored);assertPlaceMutation(data,restored,userId,{restoring:true});validateMahjong(restored);assertExerciseMutation(data,restored,userId);validateReimbursements(restored);if(changes.some(c=>c.collection==='settlements')&&Math.round(commonBalance(restored)*100)<0)throw Error('還原會造成共同帳戶餘額不足，請先補充收入或取消其他補款');for(const k of Object.keys(data))delete data[k];Object.assign(data,restored);
  return true;
 }
 export function changedFields(before,after,prefix=''){

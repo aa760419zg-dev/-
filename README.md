@@ -361,3 +361,19 @@ Flash 低延遲設定：Gemini 3 Flash 與 Flash 最新別名使用 thinkingLeve
 設定 → 匯入舊紀錄，選擇格式為 `our-home-mahjong`、version 1 的 JSON（players、sessions）；先預覽新增筆數與期間，確認後才寫入。相同 id 跳過；任何一場不合格則整批拒絕。檔案內容只在瀏覽器記憶體預覽並存入家庭文件，不加入原始碼或預設資料。一般玩家可在新增／編輯時選填連結家庭成員。
 
 `document.mahjong` 為 `{players:[], sessions:[], settings:{minGames:3}}`；舊文件缺少時以空資料相容，完整備份會包含此欄位。不需新增資料表或執行 SQL。所有寫入經 mutate／revision 衝突重試並存入 family_activity；平常逐筆記錄玩家、牌局與排行設定變更，匯入合併為一筆且附完整 changes，刪除提供 5 秒復原。重試一律從最新文件依 id 找紀錄。測試只用自行建立的虛構資料，不含匯入的真實玩家與牌局。
+
+### 地圖依賴與行政區界資料
+
+`npm run build` 會將 Leaflet、topojson-client 打包到 `public/vendor`，並複製 Leaflet CSS／圖片、`taiwan-atlas/towns-10t.json` 與各套件授權文件。產物不納入版本控制，由本機及 Vercel 建置產生；不在全站 HTML 載入地圖，頁面整合時應在進入「📍吃喝玩樂」後才載入這些資源。
+
+行政區界：內政部國土測繪中心（政府資料開放授權條款）。圖資由 MIT 授權的 [taiwan-atlas](https://www.npmjs.com/package/taiwan-atlas) 整理，使用未投影的 `towns-10t.json`（368 區），依 towns 物件的 `COUNTYNAME`、`TOWNNAME` 識別縣市與鄉鎮市區；不可誤用只有 74 個選區的 `districts-10t.json`。
+
+「📍吃喝玩樂」從電腦左側導覽／手機「更多」進入；所有地點與造訪保存於家庭文件的 places／placeVisits，透過 mutate／revision 重試並與 family_activity 同一次存檔。評分與再訪意願只顯示本人欄位，mutate 內再次檢查；共同評論、參與名單及地點資料可由兩位成員編輯。其他成員已有評分時，不能直接移除其參與身分或清除其評分。
+
+行政區狀態從造訪即時推算：同一筆包含兩位成員才解鎖，分開造訪為半解鎖；四階色深依 1、2～3、4～6、7 次以上。計數不依賴儲存的解鎖旗標。建置另產生約 500 KB 的 taiwan-topology.js（同份 TopoJSON 的 ES module 封裝），進入頁面後由 topojson-client 轉成多邊形，與 Leaflet、界線模組均只在進入本頁後載入。新莊／林口預設地圖可拖曳縮放，地圖位置依家庭記在 localStorage；縮放 13 以上顯示地點圖釘。
+
+新增可貼 Google 地圖連結、長按／右鍵地圖、使用目前位置，或按搜尋查 Nominatim。Nominatim 限亞洲國家、zh-TW、最多 5 筆，不做打字即查，佇列每次至少間隔 1.1 秒並快取相同查詢；底圖與搜尋需連網。輸入給第三方的只有地名／座標，不傳送家庭成員、評分或照片。外部服務失敗時仍保留手動欄位及其他新增方式。
+
+`api/place-from-link.js` 使用與運動 AI 相同的 Supabase 公開設定驗證 access token，不需額外金鑰。僅接受精確允許的 Google 地圖網域與路徑，手動跟隨最多 5 次轉址並逐次重新檢查目標，8 秒總逾時；不存取任意網址或內網位址。本機 server.js 與 Vercel 共用處理器，Vercel 設定最長 15 秒。部署會自動安裝新套件並建置地圖資產，不需新增 SQL。
+
+照片沿用 family-pet-photos 私人空間：瀏覽器壓縮為最長邊 1600px、JPEG 0.8，最多 9 張，路徑為 `<家庭ID>/places/<地點ID>/<隨機ID>.jpg`。文件只儲存路徑，讀取時產生有效一小時的簽名網址。刪除地點會同步刪除造訪引用並列出筆數，照片檔案保留；5 秒復原及操作紀錄還原會一併恢復相關紀錄與原照片引用。完整備份包含新集合，舊文件沒有新欄位時以空陣列相容。
