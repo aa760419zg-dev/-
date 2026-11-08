@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>九柱修練錄 · 今天也一起變強</title>
+<style>
+:root{
+  --sky1:#07111c; --sky2:#0f2233; --sky3:#1a3446;
+  --glass:rgba(200,230,240,.06); --glass2:rgba(200,230,240,.1); --edge:rgba(119,166,245,.16);
+  --qing:#9bd6b8; --qing-d:#548e70; --gold:#dec9a1; --gold-d:#9b835d;
+  --text:#eef5f7; --mute:#a7bcc4; --dim:#6e8892; --red:#f0a08a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scrollbar-gutter:stable;background:var(--sky1)}
+body{color:var(--text);font-family:"Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden;
+  background:linear-gradient(180deg,var(--sky1) 0%,var(--sky2) 45%,var(--sky3) 100%) fixed}
+.wk{font-family:system-ui,"Noto Serif TC",serif}
+
+/* ---------- 系統背景 ---------- */
+.bg{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.moon{position:absolute;top:-120px;right:-110px;width:300px;height:300px;opacity:.75;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,250,230,.55) 0%,rgba(222,201,161,.18) 22%,rgba(155,214,184,.06) 45%,transparent 70%)}
+.moon::after{content:"";position:absolute;top:96px;left:96px;width:108px;height:108px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,#fffbec,#f3e3b6 60%,#d9c48d);opacity:.4;filter:blur(.5px)}
+.mist{position:absolute;width:160vw;height:220px;left:-30vw;border-radius:50%;filter:blur(40px);opacity:.5;
+  background:radial-gradient(ellipse at center,rgba(220,240,245,.18),transparent 65%)}
+.m1{top:18%;animation:drift 38s ease-in-out infinite alternate}
+.m2{top:46%;animation:drift 52s ease-in-out infinite alternate-reverse;opacity:.35}
+.m3{bottom:6%;height:280px;animation:drift 44s ease-in-out infinite alternate;opacity:.6}
+@keyframes drift{from{transform:translateX(-12vw)}to{transform:translateX(12vw)}}
+.mtn{position:absolute;bottom:0;left:0;width:100%;height:38vh;min-height:220px}
+#spirit{position:absolute;inset:0;width:100%;height:100%}
+@media (prefers-reduced-motion:reduce){.mist{animation:none}}
+
+/* ---------- 版面 ---------- */
+.app{max-width:440px;margin:0 auto;min-height:100vh;padding:22px 18px 104px;position:relative;z-index:1}
+h1{font-family:system-ui,serif;font-weight:700;font-size:38px;letter-spacing:.12em;line-height:1.35;
+  text-shadow:0 0 24px rgba(155,214,184,.35)}
+h2{font-family:system-ui,serif;font-weight:700;font-size:24px;line-height:1.5;letter-spacing:.05em}
+h3{font-family:system-ui,serif;font-size:15px;font-weight:700;color:var(--gold);letter-spacing:.3em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+h3::before{content:"";width:14px;height:1px;background:var(--gold-d)}
+p{line-height:1.85;color:var(--mute);font-size:14.5px}
+.tag{display:inline-block;font-family:system-ui,serif;font-size:13px;letter-spacing:.4em;color:var(--qing);padding:4px 4px 4px 14px;
+  border-left:1px solid var(--qing-d);border-right:1px solid var(--qing-d)}
+.btn{display:block;width:100%;border:0;border-radius:999px;padding:15px;font-family:system-ui,serif;font-size:18px;font-weight:700;letter-spacing:.3em;cursor:pointer;
+  color:#1e2a22;background:linear-gradient(90deg,#c9f2e8,#f6e3a6 55%,#c9f2e8);background-size:200% 100%;
+  box-shadow:0 0 0 1px rgba(255,255,255,.25) inset,0 8px 30px rgba(155,214,184,.25),0 0 40px rgba(222,201,161,.15);
+  animation:sheen 6s linear infinite;transition:transform .1s,opacity .2s}
+@keyframes sheen{to{background-position:-200% 0}}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.28;box-shadow:none;cursor:default;animation:none}
+.btn.ghost{background:transparent;color:var(--mute);border:1px solid var(--edge);box-shadow:none;font-weight:400;letter-spacing:.15em;font-size:15px;animation:none}
+.card{background:linear-gradient(180deg,var(--glass2),var(--glass));border:1px solid var(--edge);border-radius:20px;padding:18px;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);position:relative}
+.fade{animation:fade .5s ease both}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.sec{margin-top:22px}
+.quote{font-family:system-ui,serif;text-align:center;color:var(--gold);opacity:.85;letter-spacing:.25em;font-size:14px;margin:26px 0 6px}
+
+/* intro */
+.intro{display:flex;flex-direction:column;min-height:calc(100vh - 130px);justify-content:center;gap:20px}
+.seal{width:76px;height:76px;border-radius:50%;display:grid;place-items:center;font-family:system-ui,serif;font-weight:700;font-size:36px;color:var(--gold);
+  border:1px solid var(--gold-d);background:radial-gradient(circle,rgba(222,201,161,.14),transparent 70%);box-shadow:0 0 40px rgba(222,201,161,.2);animation:breathe 5s ease-in-out infinite}
+@keyframes breathe{50%{box-shadow:0 0 70px rgba(222,201,161,.35);transform:translateY(-4px)}}
+input.name{width:100%;background:rgba(7,17,28,.5);border:1px solid var(--edge);border-radius:14px;padding:14px 16px;color:var(--text);font-family:system-ui,serif;font-size:17px;letter-spacing:.1em}
+input.name:focus{outline:none;border-color:var(--qing-d);box-shadow:0 0 20px rgba(155,214,184,.15)}
+
+/* quiz */
+.qtop{display:flex;justify-content:space-between;align-items:center;height:38px}
+.back{background:none;border:1px solid var(--edge);color:var(--mute);width:38px;height:38px;border-radius:50%;font-size:18px;cursor:pointer}
+.xpchip{font-family:system-ui,serif;font-size:14px;color:var(--gold);letter-spacing:.1em}
+.stages{display:flex;gap:4px;margin:16px 0 0;height:44px}
+.stages div{flex:1;text-align:center;font-family:system-ui,serif;font-size:13px;color:var(--dim);letter-spacing:.1em;transition:color .3s}
+.stages i{display:block;width:9px;height:9px;margin:0 auto 7px;transform:rotate(45deg);border:1px solid var(--dim);transition:all .3s}
+.stages .on{color:var(--qing)} .stages .on i{background:var(--qing);border-color:var(--qing);box-shadow:0 0 12px var(--qing)}
+.stages .done{color:var(--mute)} .stages .done i{background:var(--qing-d);border-color:var(--qing-d)}
+#qa{transition:opacity .18s ease;min-height:600px}
+#qa.out{opacity:0}
+.qtitle{margin:22px 0 4px;min-height:72px}
+.qhint{font-size:13px;color:var(--dim);margin-bottom:18px;height:20px}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{text-align:left;background:rgba(200,230,240,.05);border:1px solid var(--edge);border-radius:14px;padding:13px 16px;color:var(--text);
+  font:inherit;font-size:15px;cursor:pointer;transition:background .2s,border-color .2s,box-shadow .2s,opacity .2s;display:flex;align-items:baseline;gap:10px;-webkit-tap-highlight-color:transparent}
+.opt .xn{font-family:system-ui,serif;font-size:17px;letter-spacing:.06em}
+.opt .mn{font-size:12.5px;color:var(--dim);margin-left:auto;text-align:right}
+.opt:hover{border-color:rgba(119,166,245,.3)}
+.opt.sel{border-color:var(--qing);background:rgba(155,214,184,.13);box-shadow:0 0 22px rgba(155,214,184,.15) inset}
+.opt.sel .mn{color:var(--qing)}
+.opt.dis{opacity:.35}
+.slider{margin:26px 0 10px;text-align:center}
+.slider .val{font-family:system-ui,serif;font-size:68px;font-weight:700;color:var(--qing);line-height:1;text-shadow:0 0 30px rgba(155,214,184,.4)}
+.slider .vl{font-family:system-ui,serif;color:var(--mute);margin-top:8px;height:22px;letter-spacing:.1em}
+input[type=range]{width:100%;margin-top:22px;accent-color:var(--qing)}
+.rlab{display:flex;justify-content:space-between;font-size:12.5px;color:var(--dim);margin-top:6px}
+.foot{margin-top:24px}
+
+/* overlay */
+.ov{position:fixed;inset:0;background:rgba(4,10,16,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;z-index:50;padding:24px;animation:fade .3s both}
+.ovbox{max-width:360px;width:100%;text-align:center;animation:rise .6s cubic-bezier(.2,1.2,.4,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(20px) scale(.95)}to{opacity:1;transform:none}}
+.bigxp{font-family:system-ui,serif;font-size:54px;font-weight:700;color:var(--gold);margin:6px 0;text-shadow:0 0 30px rgba(222,201,161,.5)}
+.flash{position:fixed;inset:0;background:#e9fbff;z-index:49;pointer-events:none;animation:flash .9s ease-out forwards}
+@keyframes flash{0%{opacity:0}8%{opacity:.85}16%{opacity:.1}24%{opacity:.6}100%{opacity:0}}
+.bolt{width:70px;margin:0 auto;display:block;filter:drop-shadow(0 0 14px #bff4ff)}
+
+/* scan */
+.scan{min-height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.stone{width:120px;height:120px;border-radius:50%;position:relative;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.5),rgba(155,214,184,.25) 40%,rgba(30,60,80,.5) 75%);
+  box-shadow:0 0 60px rgba(155,214,184,.3),inset 0 0 30px rgba(255,255,255,.15);animation:glow 1.4s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 110px rgba(222,201,161,.45),inset 0 0 40px rgba(255,255,255,.3)}}
+.scanlog{font-family:system-ui,serif;font-size:15px;color:var(--mute);height:24px;letter-spacing:.12em}
+
+/* reveal / card */
+.roots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.roots .card{padding:14px;text-align:center}
+.roots .k{font-size:12px;color:var(--dim);letter-spacing:.2em}
+.roots .v{font-family:system-ui,serif;font-size:26px;font-weight:700;margin:4px 0 2px}
+.roots .s{font-size:12px;color:var(--mute)}
+.who{display:flex;align-items:center;gap:14px}
+.avatar{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-family:system-ui,serif;font-size:26px;font-weight:700;color:#1e2a22;
+  background:radial-gradient(circle at 35% 30%,#fffbe8,var(--gold) 55%,var(--qing-d));box-shadow:0 0 26px rgba(222,201,161,.35)}
+.rank{font-family:system-ui,serif;font-size:14px;color:var(--gold);letter-spacing:.15em}
+.toggle{display:flex;background:rgba(7,17,28,.4);border:1px solid var(--edge);border-radius:999px;padding:4px;margin-bottom:6px}
+.toggle button{flex:1;border:0;background:none;color:var(--mute);font-family:system-ui,serif;font-size:15px;padding:8px;border-radius:999px;cursor:pointer;letter-spacing:.1em}
+.toggle button.on{background:rgba(155,214,184,.2);color:var(--qing)}
+.bars{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:10px}
+.bars div{text-align:center;font-family:system-ui,serif;font-size:13px;color:var(--mute)}
+.bars b{display:block;font-size:19px;color:var(--text);margin-bottom:2px}
+.bars b.up{color:var(--qing)}
+.heard div{display:flex;justify-content:space-between;gap:12px;font-size:14px;border-top:1px solid var(--edge);padding:10px 0}
+.heard div:first-child{border-top:0}
+.heard span:first-child{color:var(--dim);flex-shrink:0;font-family:system-ui,serif;letter-spacing:.1em}
+.heard span:last-child{text-align:right}
+
+/* duration */
+.durs{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.dur{display:flex;align-items:center;gap:16px;text-align:left;width:100%;padding:14px 18px;border-radius:18px;border:1px solid var(--edge);background:rgba(200,230,240,.05);color:var(--text);cursor:pointer;font:inherit;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.dur .d{font-family:system-ui,serif;font-size:32px;font-weight:700;width:58px;text-align:center;color:var(--qing);line-height:1}
+.dur .d small{display:block;font-size:12px;color:var(--dim);margin-top:4px;letter-spacing:.2em}
+.dur .t{font-family:system-ui,serif;font-size:18px;letter-spacing:.1em}
+.dur .x{font-size:12.5px;color:var(--dim);margin-top:2px}
+.dur .rec{margin-left:auto;font-size:12px;color:var(--gold);border:1px solid var(--gold-d);padding:2px 8px;border-radius:99px;flex-shrink:0;font-family:system-ui,serif;letter-spacing:.15em}
+.dur.sel{border-color:var(--qing);background:rgba(155,214,184,.12);box-shadow:0 0 26px rgba(155,214,184,.12)}
+.exitdate{text-align:center;margin-top:16px;height:54px}
+.date{display:inline-block;font-family:system-ui,serif;font-weight:700;font-size:20px;color:var(--gold);border-top:1px solid var(--gold-d);border-bottom:1px solid var(--gold-d);padding:6px 18px;letter-spacing:.12em}
+
+/* plan */
+.d1{display:flex;flex-direction:column;gap:10px}
+.d1 .card{display:flex;gap:14px;padding:14px}
+.d1 .when{font-family:system-ui,serif;font-size:13px;color:var(--gold);letter-spacing:.2em;margin-bottom:2px}
+.d1 .ic{width:38px;height:38px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;border:1px solid var(--edge);font-family:system-ui,serif;font-size:17px;color:var(--qing)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--dim);font-weight:400;font-size:12px;padding:6px 2px;text-align:center;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+td{padding:10px 3px;border-top:1px solid var(--edge);text-align:center}
+td .gf{font-family:system-ui,serif;font-size:15.5px;color:var(--text)}
+td .pl{display:block;font-size:12px;color:var(--dim);margin-top:1px}
+td.hi{color:var(--qing);font-weight:500}
+
+/* today */
+.dayhead{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px}
+.dayhead .n{font-family:system-ui,serif;font-size:40px;font-weight:700;line-height:1.1;letter-spacing:.05em}
+.dayhead .n small{font-size:16px;color:var(--mute)}
+.xpbar{height:6px;background:rgba(7,17,28,.6);border-radius:3px;overflow:hidden;margin:10px 0 6px}
+.xpbar i{display:block;height:100%;background:linear-gradient(90deg,var(--qing-d),var(--qing),var(--gold));box-shadow:0 0 12px var(--qing);transition:width .6s}
+.xpmeta{display:flex;justify-content:space-between;font-size:12px;color:var(--mute)}
+.tasks{display:flex;flex-direction:column;gap:10px}
+.task{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--edge);background:rgba(200,230,240,.05);cursor:pointer;transition:all .25s;user-select:none;-webkit-tap-highlight-color:transparent}
+.task .chk{width:30px;height:30px;border-radius:50%;border:1px solid var(--dim);display:grid;place-items:center;flex-shrink:0;transition:all .25s;font-family:system-ui,serif;font-size:15px;color:transparent}
+.task.done{border-color:var(--qing-d);background:rgba(155,214,184,.1)}
+.task.done .chk{background:var(--qing);border-color:var(--qing);color:#173029;box-shadow:0 0 16px var(--qing)}
+.task .gf{font-family:system-ui,serif;font-size:17px;letter-spacing:.05em}
+.task .tn{font-size:13px;color:var(--mute);margin-top:1px}
+.task.done .gf{color:var(--qing)}
+.task .tx{margin-left:auto;font-family:system-ui,serif;font-size:13px;color:var(--gold);flex-shrink:0}
+.dots{display:grid;gap:5px;margin-top:10px}
+.dots i{aspect-ratio:1;border-radius:50%;border:1px solid var(--edge);transition:all .3s}
+.dots i.p{background:rgba(155,214,184,.35);border-color:var(--qing-d)}
+.dots i.f{background:var(--qing);border-color:var(--qing);box-shadow:0 0 8px rgba(155,214,184,.6)}
+.dots i.c{border-color:var(--gold);box-shadow:0 0 0 1.5px var(--gold)}
+.row2{display:flex;gap:10px;margin-top:14px}
+.row2 .btn{font-size:14px;padding:11px}
+.float{position:fixed;left:50%;top:32%;transform:translateX(-50%);font-family:system-ui,serif;font-size:30px;font-weight:700;color:var(--gold);pointer-events:none;
+  text-shadow:0 0 20px rgba(222,201,161,.7);animation:up 1.1s ease forwards;z-index:60}
+@keyframes up{to{opacity:0;transform:translate(-50%,-60px)}}
+
+/* nav */
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(7,17,28,.75);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--edge);z-index:40}
+.nav div{max-width:440px;margin:0 auto;display:flex}
+.nav button{flex:1;background:none;border:0;color:var(--dim);font-family:system-ui,serif;font-size:12.5px;padding:10px 0 16px;cursor:pointer;letter-spacing:.15em}
+.nav button b{display:block;font-size:21px;margin-bottom:1px;font-weight:700}
+.nav button.on{color:var(--qing);text-shadow:0 0 12px rgba(155,214,184,.5)}
+.reset{background:none;border:0;color:var(--dim);font:inherit;font-size:12px;text-decoration:underline;cursor:pointer;margin-top:26px;display:block;width:100%}
+
+/* Reality Quest inspired, unofficial life-quest concept. */
+:root{--sky1:#080d1c;--sky2:#101a32;--sky3:#15182f;--glass:rgba(18,30,57,.8);--glass2:rgba(23,40,72,.9);--edge:rgba(119,166,245,.24);--qing:#9bd6b8;--qing-d:#548e70;--gold:#dec9a1;--gold-d:#9b835d;--text:#eff5ff;--mute:#b4c3de;--dim:#9babc7;--red:#ffb8a8}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 80% 0,rgba(100,76,209,.2),transparent 45%),linear-gradient(180deg,var(--sky1),var(--sky2) 60%,var(--sky3)) fixed}
+.wk,h1,h2,h3,.tag,.btn,.seal,input.name,.xpchip,.stages div,.opt .xn,.slider .val,.slider .vl,.scanlog,.roots .v,.avatar,.rank,.toggle button,.bars div,.heard span:first-child,.dur .d,.dur .t,.dur .rec,.date,.d1 .when,.d1 .ic{font-family:inherit}
+h1{font-size:36px;letter-spacing:-.04em;line-height:1.3;text-shadow:none}h2{font-size:24px;letter-spacing:-.025em}h3{font-size:14px;letter-spacing:.08em;color:var(--qing)}
+p{line-height:1.8}.app{padding-top:26px;max-width:460px}.tag{font-size:12px;font-weight:700;letter-spacing:.16em;border:1px solid var(--qing-d);padding:6px 10px;border-radius:5px;background:rgba(56,133,230,.12)}
+.intro{gap:22px}.seal{width:64px;height:64px;border-radius:16px;font-size:24px;letter-spacing:-.07em;color:var(--qing);border-color:var(--qing-d);background:rgba(67,124,217,.14);box-shadow:0 0 32px rgba(70,133,245,.15);animation:none}
+.card{border-radius:14px;background:linear-gradient(145deg,var(--glass2),var(--glass));box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.btn{border-radius:10px;background:linear-gradient(100deg,#649fff,#aa8eff);color:#091127;letter-spacing:.1em;font-size:16px;animation:none;box-shadow:0 6px 22px rgba(96,118,255,.2);min-height:48px}
+.btn.ghost{font-size:14px;letter-spacing:.03em;min-height:44px}.btn:focus-visible,.opt:focus-visible,.dur:focus-visible,.task:focus-visible{outline:2px solid var(--qing);outline-offset:3px}
+input.name{font-size:16px;border-radius:10px;letter-spacing:.03em;background:rgba(8,15,32,.75)}.opt{border-radius:10px;min-height:52px}.opt.sel,.dur.sel{border-color:var(--qing);background:rgba(65,139,234,.15);box-shadow:inset 3px 0 var(--qing)}
+.opt .xn{font-size:16px;letter-spacing:0}.opt .mn{font-size:12px}.stages{gap:6px}.stages div{font-size:12px;letter-spacing:0}.stages i{width:18px;height:3px;transform:none;border-radius:3px}.stages .on i{box-shadow:0 0 10px rgba(155,214,184,.4)}
+.stone{border-radius:20px;transform:rotate(45deg);background:linear-gradient(140deg,rgba(155,214,184,.4),rgba(123,102,232,.16));border:1px solid var(--qing);box-shadow:0 0 55px rgba(103,146,255,.2)}
+.moon{background:radial-gradient(circle,rgba(108,120,255,.18),transparent 65%)}.moon::after{display:none}.mist{opacity:.16;background:radial-gradient(ellipse,rgba(85,134,245,.2),transparent 65%)}
+.bg::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(119,166,245,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(119,166,245,.035) 1px,transparent 1px);background-size:40px 40px;mask-image:linear-gradient(black,transparent 80%)}
+.mtn{opacity:.6;height:32vh}.quote{font-family:inherit;font-size:13px;letter-spacing:.02em;color:var(--mute)}.roots .k{font-size:12px;letter-spacing:.12em}.roots .v{font-size:24px}.avatar{border-radius:14px;background:linear-gradient(135deg,#82c8ff,#dec9a1);color:#0b1730;box-shadow:none}
+.toggle{border-radius:9px}.toggle button{border-radius:6px;font-size:13px;letter-spacing:0}.toggle button.on{background:rgba(103,161,255,.18)}.rank{letter-spacing:.02em}.d1 .ic{border-radius:9px;font-size:13px}.durs .dur{border-radius:12px}.dur .rec{font-size:12px;letter-spacing:0}.dur .x{font-size:13px}.dur .t{font-size:16px}.dur .d{font-size:30px}.date{font-size:18px;letter-spacing:.02em}
+.task{border-radius:12px}.task .gf{font-family:inherit}.task .chk{border-radius:7px}.task.done{background:rgba(70,137,228,.12)}.xpbar i{background:linear-gradient(90deg,#68b9ff,#aa8eff)}.nav{background:rgba(8,14,30,.94);border-top:1px solid var(--edge);padding-bottom:env(safe-area-inset-bottom)}.nav button{font-family:inherit;font-size:12px;letter-spacing:0}.nav button b{font-family:inherit;font-size:20px}.heard span:first-child{letter-spacing:0}
+.bigxp{font-family:inherit;font-size:44px;letter-spacing:-.03em}.ovbox{max-height:calc(100dvh - 48px);overflow-y:auto}.flash{background:#8bbaff;animation:systemPulse .45s ease-out forwards}@keyframes systemPulse{from{opacity:.15}to{opacity:0}}
+th{font-size:12px}td{font-variant-numeric:tabular-nums}.gf{font-family:inherit}.reset{font-family:inherit;font-size:13px}.xpmeta{font-size:12px}.dayhead .n{font-family:inherit;font-size:25px}.heard div{font-size:13px}.dots{gap:6px}.qtitle{min-height:64px}.qhint{color:var(--mute);height:auto;min-height:20px}.rlab{font-size:12px}
+@media(max-width:374px){.app{padding-left:14px;padding-right:14px}h1{font-size:32px}.roots .v{font-size:21px}.opt{padding:12px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.flash{display:none}}
+
+
+/* Daily rotation, optional side quests and persistent per-day alternatives. */
+#spirit{opacity:.3}.daily-theme p{font-size:13px;margin-top:8px}.task{display:flex;align-items:center;gap:6px;padding:0 10px 0 0}.task-main{display:flex;align-items:center;gap:12px;flex:1;min-width:0;padding:14px;border:0;background:transparent;color:var(--text);font:inherit;text-align:left;cursor:pointer}.task-main .chk{flex-shrink:0}.task-copy{display:flex;flex-direction:column;min-width:0}.task .gf{display:block;font-size:16px}.task .tn{display:block;font-size:13px;line-height:1.6}.task-attribute{font-size:12px;color:var(--mute);margin-top:4px}.task-swap{flex:none;background:rgba(155,214,184,.06);color:var(--qing);border:1px solid var(--edge);border-radius:8px;padding:8px 6px;font:inherit;font-size:12px;white-space:nowrap;cursor:pointer;min-height:40px}.task-finished{flex:none;font-size:12px;color:var(--qing);padding:0 6px}.week-preview{display:grid;gap:8px;margin-top:12px}.preview-day{padding:12px 14px;border-radius:10px;background:var(--glass);border:1px solid var(--edge)}.preview-day.active{border-color:var(--qing-d)}.preview-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--qing);font-size:13px}.preview-day p{font-size:13px;line-height:1.7;margin-top:5px}.preview-day small{display:block;font-size:12px;color:var(--gold);margin-top:6px}.plan-caption{font-size:13px;margin:8px 0}.side-quest{border-color:var(--gold-d)}.side-quest h2{font-size:20px;margin:14px 0 6px}.side-quest .btn{margin-top:14px}.side-quest small{display:block;font-size:12px;color:var(--mute);margin-top:8px}details>summary{cursor:pointer;color:var(--qing);font-size:14px}details>table{margin-top:12px}
+
+
+/* Kimetsu-inspired fan theme: original wisteria and mountain decoration. */
+:root{--sky1:#09120f;--sky2:#10221d;--sky3:#182820;--glass:rgba(15,30,25,.9);--glass2:rgba(25,45,36,.91);--edge:rgba(160,185,154,.25);--qing:#9bd6b8;--qing-d:#548e70;--gold:#dec9a1;--gold-d:#9b835d;--text:#f5f1e7;--mute:#bccabd;--dim:#a4b5a4;--red:#efb3a8}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 100% 0,rgba(157,119,189,.16),transparent 38%),linear-gradient(180deg,var(--sky1),var(--sky2) 65%,var(--sky3)) fixed}
+h1,h2,.seal,.tag{font-family:"Noto Serif TC","Songti TC",serif}h1{font-size:36px;letter-spacing:.04em;line-height:1.5}h2{letter-spacing:.03em}.tag{color:var(--gold);border-color:var(--gold-d);background:rgba(190,160,109,.08);font-size:12px;letter-spacing:.18em}
+.seal{width:68px;height:68px;border-radius:6px;border:1px solid var(--gold-d);font-size:38px;color:var(--gold);background:rgba(34,65,49,.85);box-shadow:0 0 0 5px rgba(190,160,109,.05)}
+.bg::after{background-image:conic-gradient(from 90deg,rgba(84,139,102,.07) 25%,transparent 0 50%,rgba(84,139,102,.07) 0 75%,transparent 0);background-size:72px 72px;mask-image:linear-gradient(black,transparent 85%)}
+.wisteria{position:absolute;top:0;left:0;width:100%;height:190px;opacity:.52}.moon{background:radial-gradient(circle,rgba(214,202,169,.14),transparent 65%)}.mist{background:radial-gradient(ellipse,rgba(126,165,136,.17),transparent 65%)}.mtn{opacity:.6}
+.card{border-radius:10px;background:linear-gradient(145deg,var(--glass2),var(--glass));box-shadow:inset 0 1px rgba(218,199,158,.04)}
+.btn{background:linear-gradient(105deg,#a9d4b6,#ddcca3);color:#13291e;border-radius:7px;box-shadow:0 5px 20px rgba(94,151,110,.12);letter-spacing:.15em}.btn.ghost{background:transparent;color:var(--mute);letter-spacing:.03em}
+.opt.sel,.dur.sel{border-color:var(--qing);background:rgba(103,153,117,.13);box-shadow:inset 3px 0 var(--qing-d)}.stone{background:linear-gradient(140deg,rgba(150,210,173,.25),rgba(180,152,206,.2));border-color:var(--gold);box-shadow:0 0 55px rgba(144,187,143,.15);border-radius:50%;transform:none}
+.avatar{border-radius:8px;color:#1b3023;background:linear-gradient(135deg,#b8d4af,#dbc99f)}.roots .v{font-size:23px;white-space:nowrap}.toggle button.on{background:rgba(143,190,150,.16)}.xpbar i{background:linear-gradient(90deg,#75b895,#d6c39c)}
+.task{border-radius:9px}.task.done{background:rgba(127,173,136,.12)}.task.done .chk{background:var(--qing);box-shadow:0 0 10px rgba(143,190,150,.2)}.task-swap{background:rgba(153,187,149,.06);color:var(--qing)}.preview-day{border-radius:8px}.preview-heading{color:var(--gold)}
+.nav{background:rgba(8,18,14,.96);border-top-color:var(--edge)}.nav button.on{color:var(--qing)}.nav button.on b{text-shadow:0 0 12px rgba(159,212,177,.3)}.nav button b{font-family:serif}
+.side-quest{border-color:#89769b;background:linear-gradient(145deg,rgba(48,39,55,.7),var(--glass))}.side-quest .tag{color:#d4bee5;border-color:#89769b}.quote{color:var(--gold);font-family:serif;line-height:1.8}.float{color:var(--gold)}.flash{background:#b7d9bc}.bolt{filter:drop-shadow(0 0 14px rgba(155,214,184,.3))}.seal{animation:none}.plan-caption{line-height:1.8}
+
+
+/* Nine distinct haori-inspired motifs and emblems, all drawn for this prototype. */
+:root{--pillar-deep:#17334a}.app{max-width:480px}.intro{gap:16px;justify-content:flex-start;padding-top:12px;min-height:initial}.intro h1{font-size:32px;line-height:1.45}.intro>.seal{width:48px;height:48px;font-size:27px}.intro>p{font-size:13px}.intro .companion-banner{margin:0}.intro .companion-banner.compact{min-height:100px}
+.companion-banner{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:66px minmax(0,1fr) auto;gap:12px;align-items:center;border:1px solid var(--pillar-color);background:linear-gradient(130deg,var(--pillar-deep),rgba(10,19,17,.95));border-radius:12px;padding:16px;margin-top:18px;color:var(--text)}
+.companion-pattern{position:absolute;inset:0;z-index:-1;opacity:.11;background:repeating-linear-gradient(125deg,var(--pillar-color) 0 1px,transparent 1px 16px)}
+[data-companion=giyu] .companion-pattern{background:linear-gradient(90deg,#8d3547 0 40%,transparent 40%),repeating-conic-gradient(from 30deg,#c5bd75 0 60deg,#416d4b 60deg 120deg,#bba96c 120deg 180deg);opacity:.14}
+[data-companion=shinobu] .companion-pattern{background:radial-gradient(ellipse at 10% 100%,#ddebc8,transparent 55%),repeating-linear-gradient(65deg,transparent 0 24px,#cab0e0 24px 25px);opacity:.16}
+[data-companion=rengoku] .companion-pattern{background:repeating-conic-gradient(from 30deg at 50% 100%,#dc5f33 0 10deg,#d9b34f 10deg 18deg,transparent 18deg 35deg);opacity:.12}
+[data-companion=tengen] .companion-pattern{background:repeating-conic-gradient(from 45deg,#e4b1ca 0 25%,transparent 0 50%);background-size:36px 36px}
+[data-companion=mitsuri] .companion-pattern{background:linear-gradient(120deg,#f2bdd0,transparent 50%,#b5d786);opacity:.18}
+[data-companion=muichiro] .companion-pattern{background:repeating-linear-gradient(175deg,transparent 0 25px,#b9e1db 25px 35px,transparent 35px 65px);opacity:.1}
+[data-companion=obanai] .companion-pattern{background:repeating-linear-gradient(110deg,#e9e5dc 0 12px,transparent 12px 26px);opacity:.12}
+[data-companion=sanemi] .companion-pattern{background:repeating-linear-gradient(145deg,transparent 0 35px,#bad2a8 35px 38px,transparent 38px 42px,#bad2a8 42px 43px);opacity:.16}
+[data-companion=gyomei] .companion-pattern{background:radial-gradient(circle,#ddd2ac 2px,transparent 3px);background-size:23px 23px;opacity:.13}
+.companion-art{display:grid;place-items:center;color:var(--pillar-color)}.companion-art .pillar-emblem{width:48px;height:48px}.companion-art>span{font-family:serif;font-size:13px;letter-spacing:.3em;margin-top:3px}.companion-copy{min-width:0}.companion-copy>small{color:var(--pillar-gold);font-size:12px}.companion-copy h2{font-size:20px;line-height:1.5;margin:3px 0}.companion-copy h2 span{display:block;font-family:system-ui,sans-serif;font-size:15px;color:var(--text);letter-spacing:0}.companion-copy p{font-size:12px;color:var(--mute)}.companion-change{align-self:start;color:var(--pillar-color);border:0;background:transparent;padding:3px 0;font-size:12px;min-height:36px;cursor:pointer;white-space:nowrap}
+.companion-message{grid-column:1/-1;border-top:1px solid var(--edge);padding-top:12px}.companion-message p{font-size:14px;color:var(--text);line-height:1.8}.companion-message small{display:block;font-size:12px;color:var(--mute);margin-top:5px}.companion-banner.compact{padding:12px;grid-template-columns:44px minmax(0,1fr) auto;gap:10px}.compact .companion-art .pillar-emblem{width:36px;height:36px}.compact .companion-copy h2{font-size:16px}.compact .companion-copy h2 span{display:inline;font-size:13px;margin-left:8px}.compact .companion-copy p{font-size:12px}.compact .companion-art>span{display:none}
+.pillar-selection h1{font-size:29px;line-height:1.4;margin:22px 0 10px}.pillar-selection>p{font-size:13px}.pillar-mode{display:flex;gap:8px;margin:20px 0 16px}.pillar-mode button{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;align-items:center;border:1px solid var(--edge);background:var(--glass);color:var(--text);border-radius:9px;padding:12px 6px;cursor:pointer;font-size:14px}.pillar-mode button small{font-size:12px;color:var(--mute)}.pillar-mode button.on{border-color:var(--qing);background:rgba(164,160,200,.1)}
+.pillar-roster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.pillar-card{min-width:0;padding:13px 5px 10px;display:flex;flex-direction:column;align-items:center;gap:5px;border:1px solid var(--edge);border-radius:10px;background:var(--pillar-deep);color:var(--pillar-color);cursor:pointer;position:relative}.pillar-card.selected{border-color:var(--pillar-color);box-shadow:0 0 0 1px var(--pillar-color) inset}.pillar-card.selected:after{content:'✓';position:absolute;right:6px;top:4px;font-size:12px}.pillar-card .pillar-emblem{width:38px;height:38px;margin-bottom:3px}.pillar-card strong{font-size:16px;font-family:serif;letter-spacing:.12em}.pillar-card>span{font-size:12px;color:var(--text);white-space:nowrap}.pillar-card>small{font-size:12px;color:var(--mute);letter-spacing:0;white-space:nowrap}.pillar-description{margin:14px 0;padding:14px;border-left:2px solid var(--pillar-color);background:var(--pillar-deep);border-radius:0 9px 9px 0}.pillar-description>strong{font-size:14px;color:var(--pillar-color)}.pillar-description p{font-size:14px;margin:4px 0}.pillar-description small{font-size:12px;color:var(--mute);line-height:1.8}.pillar-selection .btn{margin-top:18px;font-size:15px}
+.task{background:linear-gradient(130deg,var(--pillar-deep),rgba(17,29,24,.9))}.preview-day.active{border-color:var(--qing)}.pillar-card:focus-visible,.companion-change:focus-visible{outline:2px solid var(--pillar-color);outline-offset:3px}.daily-theme{margin-top:16px}.daily-theme p{font-size:13px}.wisteria{opacity:.3}
+@media(max-width:374px){.pillar-card>span{font-size:12px;letter-spacing:-.04em}.pillar-card{padding-left:2px;padding-right:2px}.companion-banner{grid-template-columns:48px minmax(0,1fr) auto;padding:12px;gap:8px}.companion-copy h2 span{font-size:14px}}
+
+
+/* The selected companion also changes the surrounding accent and haori texture. */
+.btn:not(.ghost){background:linear-gradient(105deg,var(--qing),var(--gold))}.xpbar i{background:linear-gradient(90deg,var(--qing),var(--gold))}.avatar{background:linear-gradient(135deg,var(--qing),var(--gold))}body{background:radial-gradient(ellipse at 100% 0,var(--pillar-deep),transparent 50%),linear-gradient(180deg,var(--sky1),var(--sky2) 65%,var(--sky3)) fixed}
+.bg::after{background-image:repeating-linear-gradient(125deg,rgba(160,185,154,.06) 0 1px,transparent 1px 24px);background-size:auto}
+html[data-pillar=giyu] .bg::after{background-image:linear-gradient(90deg,rgba(126,47,64,.1) 0 42%,transparent 42%),repeating-conic-gradient(from 30deg,rgba(133,153,83,.07) 0 60deg,transparent 60deg 120deg,rgba(171,156,92,.06) 120deg 180deg);background-size:auto,60px 60px}
+html[data-pillar=shinobu] .bg::after{background-image:radial-gradient(ellipse at 0 0,rgba(203,179,226,.12),transparent 60%),repeating-linear-gradient(65deg,transparent 0 32px,rgba(218,200,233,.045) 32px 33px)}
+html[data-pillar=rengoku] .bg::after{background-image:repeating-conic-gradient(from 30deg at 50% 100%,rgba(222,91,45,.045) 0 10deg,rgba(231,177,76,.04) 10deg 18deg,transparent 18deg 35deg)}
+html[data-pillar=tengen] .bg::after{background-image:repeating-conic-gradient(from 45deg,rgba(230,178,203,.055) 0 25%,transparent 0 50%);background-size:44px 44px}
+html[data-pillar=mitsuri] .bg::after{background-image:linear-gradient(125deg,rgba(242,189,208,.1),transparent 50%,rgba(181,215,134,.07))}
+html[data-pillar=muichiro] .bg::after{background-image:repeating-linear-gradient(175deg,transparent 0 50px,rgba(185,225,219,.04) 50px 65px,transparent 65px 110px)}
+html[data-pillar=obanai] .bg::after{background-image:repeating-linear-gradient(110deg,rgba(233,229,220,.035) 0 18px,transparent 18px 40px)}
+html[data-pillar=sanemi] .bg::after{background-image:repeating-linear-gradient(145deg,transparent 0 50px,rgba(186,210,168,.055) 50px 53px,transparent 53px 58px,rgba(186,210,168,.04) 58px 59px)}
+html[data-pillar=gyomei] .bg::after{background-image:radial-gradient(circle,rgba(221,210,172,.08) 2px,transparent 3px);background-size:32px 32px}
+
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <div class="moon"></div>
+  <div class="mist m1"></div>
+  <svg class="mtn" viewBox="0 0 440 260" preserveAspectRatio="none">
+    <path d="M0 150 45 110 75 130 130 54 190 128 244 75 300 140 365 60 440 143V260H0Z" fill="#163630"/>
+    <path d="M0 196 70 153 130 185 205 118 280 173 354 135 440 193V260H0Z" fill="#10251f"/>
+    <path d="M0 225 75 205 155 229 235 195 340 225 440 200V260H0Z" fill="#091713"/>
+  </svg>
+  <svg class="wisteria" viewBox="0 0 440 190" preserveAspectRatio="xMidYMin slice">
+    <g fill="none" stroke="#48674e" stroke-width="2"><path d="M-8 0q110 48 224-15M288-8q69 60 160 33M25 13v73M83 22v89M137 14v57M339 14v90M389 24v118"/></g>
+    <g fill="#b398ca" opacity=".5">
+      <ellipse cx="24" cy="49" rx="10" ry="13"/><ellipse cx="29" cy="67" rx="8" ry="12"/><ellipse cx="24" cy="85" rx="6" ry="10"/>
+      <ellipse cx="81" cy="57" rx="12" ry="16"/><ellipse cx="88" cy="80" rx="9" ry="14"/><ellipse cx="82" cy="101" rx="6" ry="11"/>
+      <ellipse cx="135" cy="42" rx="9" ry="13"/><ellipse cx="141" cy="61" rx="6" ry="10"/>
+      <ellipse cx="337" cy="50" rx="11" ry="16"/><ellipse cx="345" cy="76" rx="9" ry="14"/><ellipse cx="338" cy="98" rx="6" ry="10"/>
+      <ellipse cx="388" cy="62" rx="12" ry="18"/><ellipse cx="394" cy="89" rx="9" ry="15"/><ellipse cx="387" cy="114" rx="7" ry="12"/><ellipse cx="391" cy="135" rx="5" ry="9"/>
+    </g>
+  </svg>
+  <div class="mist m2"></div>
+  <div class="mist m3"></div>
+  <canvas id="spirit"></canvas>
+</div>
+
+<div class="app" id="app"></div>
+<nav class="nav" id="nav" hidden><div>
+  <button data-tab="today"><b>✓</b>今日修練</button>
+  <button data-tab="plan"><b>卷</b>修練手帖</button>
+  <button data-tab="card"><b>滅</b>隊士檔案</button>
+</div></nav>
+
+<script>
+/* ========== 資料 ========== */
+const P = {
+  body:{n:'體能',m:'體能活動',el:'炎'},
+  mind:{n:'集中',m:'情緒與壓力',el:'水'},
+  rest:{n:'恢復',m:'睡眠與精力',el:'霞'},
+  fuel:{n:'補給',m:'飲食與補給',el:'岩'},
+  bond:{n:'羈絆',m:'人際互動',el:'戀'},
+  will:{n:'意志',m:'方向與目標',el:'風'},
+};
+const PK = Object.keys(P);
+const STAGES = ['適性','體能','專注','恢復','補給','目標'];
+const REALMS = [[0,'癸 · 初入隊門'],[150,'壬 · 修練起步'],[600,'辛 · 穩步前行'],[1500,'庚 · 心志漸定'],[3000,'己 · 根基漸穩'],[5000,'戊 · 持續精進'],[7500,'丁 · 風雨不退'],[10000,'丙 · 百鍊之心'],[12500,'乙 · 堅毅之志'],[16000,'甲 · 千鍛成鋼']];
+const QUOTES = ['下一步的力量，從今天的一點堅持開始。','路再遠，也可以從今天這一步重新出發。','把每一件小事，做成向前的力量。','不用一次變強，先做好眼前這一項。','想守護的日常，也值得好好鍛鍊。','願你在藤花下，好好休息，也繼續向前。'];
+
+const Q = [
+  {id:'focus',s:0,type:'multi',max:3,q:'準隊士，你最想鍛鍊哪項能力？',hint:'最多選 3 項，優先選你最在意的',
+    o:PK.map(k=>[k,P[k].n,P[k].m])},
+  {id:'block',s:0,q:'哪種狀況最常讓你的任務失敗？',
+    o:[['time','時間不足','沒時間'],['moti','啟動困難','沒動力'],['guide','缺少方向','不知從哪開始'],['quit','容易中斷','常半途而廢']]},
+  {id:'act',s:1,q:'出發之前，你的體能基礎如何？',
+    o:[[0,'尚未啟動','幾乎不運動'],[1,'偶爾出擊','不太穩定'],[2,'穩定訓練','每週 2–3 次'],[3,'勤練隊士','很活躍']]},
+  {id:'limit',s:1,type:'multi',max:3,none:'none',q:'有需要避開的受傷部位嗎？',hint:'育手會避開部分不適合的訓練任務',
+    o:[['knee','下肢','膝蓋或腳踝'],['back','背腰','背部或腰'],['shoulder','上肢','肩頸或手腕'],['none','目前沒有','以上皆無']]},
+  {id:'place',s:1,q:'你偏好在哪裡執行任務？',
+    o:[['in','室內道場','在家'],['out','戶外修練','戶外'],['any','自由切換','都可以']]},
+  {id:'stress',s:2,type:'slider',min:1,max:10,def:5,q:'你最近的壓力負荷有多高？',hint:'依照最近一週的感受調整',lo:'負荷很低',hi:'接近滿載',
+    vl:v=>v<=2?'負荷很低':v<=4?'有點壓力':v<=6?'負荷中等':v<=8?'負荷偏高':'急需休息'},
+  {id:'screen',s:2,q:'每天有多少時間被社群占用？',hint:'估計每天滑社群媒體的時間',
+    o:[[0,'短暫上線','不到 1 小時'],[1,'一般使用','1–3 小時'],[2,'長時間上線','3–5 小時'],[3,'高頻使用','5 小時以上']]},
+  {id:'sleep',s:3,q:'你每天的恢復時間夠嗎？',hint:'你平均一晚的睡眠',
+    o:[[0,'恢復不足','不到 5 小時'],[1,'勉強維持','5–6 小時'],[2,'尚可','6–7 小時'],[3,'充能完整','7 小時以上']]},
+  {id:'bed',s:3,q:'就寢之前，你通常在做什麼？',
+    o:[[0,'持續上線','躺床滑手機'],[1,'娛樂模式','追劇或打遊戲'],[2,'放鬆模式','看書或放鬆'],[3,'直接休息','直接睡著']]},
+  {id:'diet',s:4,q:'你平日的飲食像哪一種？',
+    o:[[0,'補給均衡','大多吃得健康'],[1,'時好時壞','努力但不穩定'],[2,'便利補給','多外食或超商'],[3,'隨機補給','幾乎不考慮營養']]},
+  {id:'water',s:4,q:'你每天補充多少水分？',hint:'也就是喝水量',
+    o:[[0,'補水偏少','不到 1 公升'],[1,'一般補水','1–2 公升'],[2,'穩定補水','2 公升以上']]},
+  {id:'talk',s:5,q:'上次與重要的人好好聊天，是什麼時候？',hint:'放下手機、真正聊天的那種',
+    o:[[0,'就在本週','這週'],[1,'月內曾有','這個月'],[2,'有一陣子了','很久了']]},
+  {id:'dir',s:5,q:'你今年想努力的方向清楚嗎？',
+    o:[[0,'目標清楚','很清楚'],[1,'尚在探索','有方向但模糊'],[2,'等待指引','完全迷茫']]},
+  {id:'push',s:5,q:'你希望育手用什麼節奏帶你？',
+    o:[[0,'溫和修練','溫和，別逼我'],[1,'穩步修練','穩穩逐步加量'],[2,'積極修練','推我，我扛得住']]},
+  {id:'conf',s:5,type:'slider',min:1,max:10,def:5,q:'連續完成 7 天任務，你有幾成把握？',hint:'如實選擇，育手會調整每日修練量',lo:'毫無把握',hi:'十拿九穩',
+    vl:v=>`${v} 成把握`},
+];
+
+/* 訓練任務庫：f=訓練任務名, n=白話 */
+const H = [
+  {id:'walk',p:'body',f:'步行鍛鍊',n:'快走',u:'分鐘',start:[10,15,20],step:5,every:2,max:40,ok:c=>true,pref:c=>(c.place!=='in'?2:0)+(c.act<=1?2:0)},
+  {id:'squat',p:'body',f:'足腰鍛鍊',n:'深蹲',u:'下',start:[8,12,20],step:4,every:1,max:50,ok:c=>!c.limit.includes('knee'),pref:c=>(c.place!=='out'?2:0)+(c.act>=1?1:0)},
+  {id:'pushup',p:'body',f:'臂力鍛鍊',n:'伏地挺身',u:'下',start:[5,10,15],step:3,every:1,max:40,ok:c=>!c.limit.includes('shoulder'),pref:c=>(c.act>=2?3:0)},
+  {id:'stretch',p:'body',f:'柔軟鍛鍊',n:'全身伸展',u:'分鐘',start:[5,8,10],step:2,every:2,max:20,ok:c=>true,pref:c=>(c.limit.some(x=>x!=='none')?4:0)},
+  {id:'meditate',p:'mind',f:'靜心時刻',n:'靜坐冥想',u:'分鐘',start:[3,5,10],step:2,every:2,max:20,ok:c=>true,pref:c=>(c.stress>=6?3:1)},
+  {id:'screen',p:'mind',f:'離線挑戰',n:'社群媒體上限',u:'分鐘',down:true,ok:c=>c.screen>=1,pref:c=>c.screen*2,
+    first:c=>[150,240,300][c.screen-1]-c.push*30,step:-15,every:1,min:60},
+  {id:'grat',p:'mind',f:'正向紀錄',n:'睡前寫下 3 件好事',fixed:true,ok:c=>true,pref:c=>1},
+  {id:'phone',p:'rest',f:'入夜歸息',n:'手機放臥室外睡覺',fixed:true,ok:c=>true,pref:c=>(c.bed<=1?4:1)},
+  {id:'nobl',p:'rest',f:'夜間靜養',n:'睡前不碰螢幕',u:'分鐘',start:[15,20,30],step:10,every:2,max:60,ok:c=>true,pref:c=>(c.bed<=1?3:0)},
+  {id:'lights',p:'rest',f:'規律歸息',n:'固定時間上床',fixed:true,ok:c=>true,pref:c=>(c.sleep<=1?3:0)},
+  {id:'water',p:'fuel',f:'清水補給',n:'喝水',u:'毫升',start:[1200,1500,1800],step:200,every:1,max:2500,ok:c=>true,pref:c=>(c.water===0?4:1)},
+  {id:'veg',p:'fuel',f:'均衡補給',n:'吃蔬菜或水果',u:'份',start:[1,1,2],step:1,every:3,max:4,ok:c=>true,pref:c=>(c.diet>=2?3:1)},
+  {id:'sugar',p:'fuel',f:'清茶之約',n:'用水或茶取代含糖飲料',fixed:true,ok:c=>true,pref:c=>(c.diet>=1?2:0)},
+  {id:'reach',p:'bond',f:'傳遞心意',n:'主動傳訊息給一個人',fixed:true,ok:c=>true,pref:c=>(c.talk>=1?3:1)},
+  {id:'listen',p:'bond',f:'深度交流',n:'放下手機，好好聊 10 分鐘',fixed:true,ok:c=>true,pref:c=>(c.talk===0?2:0)},
+  {id:'one',p:'will',f:'立下心願',n:'早上寫下今天最重要的一件事',fixed:true,ok:c=>true,pref:c=>(c.dir>=1?3:1)},
+  {id:'read',p:'will',f:'讀書鍛鍊',n:'閱讀',u:'頁',start:[5,10,15],step:5,every:2,max:30,ok:c=>true,pref:c=>(c.dir===0?2:1)},
+  {id:'march',p:'body',f:'道場踏步',n:'原地慢踏步',u:'分鐘',start:[3,5,8],step:1,every:2,max:15,ok:c=>!c.limit.includes('knee'),pref:c=>0,light:true},
+  {id:'mobility',p:'body',f:'舒緩鍛鍊',n:'坐姿輕柔活動腳踝',u:'分鐘',start:[2,3,4],step:1,every:3,max:6,ok:c=>!c.limit.includes('knee'),pref:c=>0,light:true},
+  {id:'slowwalk',p:'body',f:'林間散步',n:'舒適步速散步',u:'分鐘',start:[5,8,10],step:2,every:2,max:20,ok:c=>true,pref:c=>0,light:true},
+  {id:'breath',p:'mind',f:'靜心調息',n:'找個安靜角落自然呼吸',u:'分鐘',start:[2,3,4],step:1,every:3,max:6,ok:c=>true,pref:c=>0,light:true},
+  {id:'journal',p:'mind',f:'心緒手帖',n:'寫下現在的心情與一個小需求',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'focus',p:'mind',f:'凝神練習',n:'關閉通知，專心做一件事',u:'分鐘',start:[5,8,10],step:2,every:2,max:20,ok:c=>true,pref:c=>0},
+  {id:'quiet',p:'rest',f:'安靜時段',n:'睡前調暗燈光，放鬆休息',u:'分鐘',start:[5,8,10],step:2,every:2,max:20,ok:c=>true,pref:c=>0,light:true},
+  {id:'prepare',p:'rest',f:'出發準備',n:'睡前準備好明天的衣物與用品',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'shutdown',p:'rest',f:'睡前手帖',n:'睡前把未完成的事寫下，留給明天',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'slowmeal',p:'fuel',f:'用餐慢速模式',n:'選一餐，放下手機慢慢吃',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'protein',p:'fuel',f:'日常補給',n:'在一餐中搭配一份適合自己的蛋白質食物',fixed:true,ok:c=>true,pref:c=>0},
+  {id:'mealplan',p:'fuel',f:'補給規劃',n:'先想好下一餐，準備一個均衡選擇',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'thanks',p:'bond',f:'感謝之語',n:'向一位重要的人說一句具體的感謝',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'invite',p:'bond',f:'同行邀約',n:'邀一個人下次一起吃飯或散步',fixed:true,ok:c=>true,pref:c=>0},
+  {id:'memory',p:'bond',f:'記憶分享',n:'傳一張有回憶的照片，聊聊那一天',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'listenmore',p:'bond',f:'傾聽同伴',n:'問一位親友最近過得如何，認真聽回覆',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'tinygoal',p:'will',f:'目標前行',n:'為一件重要的事做一個最小步驟',u:'分鐘',start:[3,5,8],step:2,every:2,max:20,ok:c=>true,pref:c=>0},
+  {id:'review',p:'will',f:'修練小記',n:'記下今天做成的一件事與明天的一小步',fixed:true,ok:c=>true,pref:c=>0,light:true},
+  {id:'learn',p:'will',f:'見聞累積',n:'學一個小知識，寫下一句心得',u:'分鐘',start:[3,5,8],step:2,every:2,max:15,ok:c=>true,pref:c=>0},
+  {id:'clear',p:'will',f:'卸下重擔',n:'從待辦中刪掉一件現在不必做的事',fixed:true,ok:c=>true,pref:c=>0,light:true},
+
+];
+
+const DURS = [
+  [7,'初次修練','先試試水溫'],
+  [14,'基礎鍛鍊','兩週，看見第一個變化'],
+  [30,'三十日鍛鍊','一個月，讓任務變成日常'],
+  [60,'六十日磨礪','兩個月，習慣大致成形'],
+  [90,'九十日精進','三個月，建立自己的節奏'],
+];
+
+/* ========== 狀態 ========== */
+const KEY='kimetsu-training-proto-v1';
+let S = load() || fresh();
+function fresh(){return {screen:'intro',name:'',a:{},qi:0,xp:0,day:1,log:{},viewEnd:false,dur:null,schedule:{},sideLog:{},runSeed:0}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))}catch(e){return null}}
+
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const clamp=(v,a=10,b=95)=>Math.max(a,Math.min(b,Math.round(v)));
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ========== 計算 ========== */
+function ctx(){
+  const a=S.a;
+  return {focus:a.focus||[],block:a.block,act:a.act??1,limit:a.limit||[],place:a.place,stress:a.stress??5,screen:a.screen??1,
+    sleep:a.sleep??2,bed:a.bed??0,diet:a.diet??1,water:a.water??1,talk:a.talk??1,dir:a.dir??1,push:a.push??1,conf:a.conf??5};
+}
+function scores(c){
+  return {
+    body:clamp([22,40,62,80][c.act]-(c.limit.filter(x=>x!=='none').length*5)),
+    mind:clamp(98-c.stress*6+[12,4,-8,-16][c.screen]),
+    rest:clamp([20,38,58,78][c.sleep]+[-12,-6,8,6][c.bed]),
+    fuel:clamp([78,55,35,20][c.diet]+[-12,0,12][c.water]),
+    bond:clamp([76,50,24][c.talk]),
+    will:clamp([80,52,26][c.dir]),
+  };
+}
+function buildPlan(){
+  const c=ctx(), sc=scores(c);
+  const count=c.conf<=3?3:c.conf<=7?4:5;
+  const pri=PK.map(k=>({k,v:(100-sc[k])+(c.focus.includes(k)?30:0)})).sort((x,y)=>y.v-x.v);
+  const sorted=PK.slice().sort((x,y)=>sc[x]-sc[y]);
+  const weakest=sorted[0], strongest=sorted[sorted.length-1];
+  let pillars=pri.slice(0,count).map(x=>x.k);
+  if(!pillars.includes(weakest)) pillars[pillars.length-1]=weakest;
+  const habits=pillars.map(k=>H.filter(h=>h.p===k&&h.ok(c)).sort((x,y)=>y.pref(c)-x.pref(c))[0].id);
+  const avg=PK.reduce((s,k)=>s+sc[k],0)/6;
+  const aptitude=avg<35?'初露鋒芒':avg<55?'穩步成長':avg<72?'根基紮實':'適性出眾';
+  return {sc,weakest,strongest,habits,push:c.push,pillars,aptitude};
+}
+function projected(p,days){
+  const f=Math.min(1,Math.pow(days/66,.7)), out={};
+  PK.forEach(k=>{const gap=95-p.sc[k];out[k]=clamp(p.sc[k]+gap*(p.pillars.includes(k)?.62:.18)*f,10,96)});
+  return out;
+}
+function target(h,week,push){
+  if(h.fixed) return null;
+  const w=Math.max(1,week);
+  if(h.down) return Math.max(h.min,h.first(ctx())+h.step*Math.floor((w-1)/h.every));
+  return Math.min(h.max,h.start[push]+h.step*Math.floor((w-1)/h.every));
+}
+function amount(h,week,push,day=null){
+  let t=target(h,week,push);
+  if(day&&day%7===0&&t!==null&&h.p==='body')t=Math.max(1,Math.round(t*.7));
+  if(t===null) return h.n;
+  if(h.down) return `${h.n} ≤ ${t} ${h.u}`;
+  if(h.u==='毫升') return `${h.n} ${(t/1000).toFixed(1)} 公升`;
+  return `${h.n} ${t} ${h.u}`;
+}
+function realmOf(xp){
+  let i=0;for(let j=0;j<REALMS.length;j++) if(xp>=REALMS[j][0]) i=j;
+  const cur=REALMS[i], nx=REALMS[i+1]||null;
+  let stage='';
+  if(nx&&i>0){const r=(xp-cur[0])/(nx[0]-cur[0]);stage=r<1/3?'修練 I':r<2/3?'修練 II':'修練 III'}
+  return {name:cur[1],full:cur[1]+(stage?' · '+stage:''),cur,nx,i};
+}
+function dateAfter(days){const d=new Date();d.setDate(d.getDate()+days);return `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`}
+const quote=()=>QUOTES[Math.floor(Math.random()*QUOTES.length)];
+
+/* ========== 雷達圖 ========== */
+function radar(a,b,size=280){
+  const cx=size/2,cy=size/2+4,R=size*.33;
+  const pt=(i,v)=>{const g=-Math.PI/2+i*Math.PI/3;return [cx+Math.cos(g)*R*v/100,cy+Math.sin(g)*R*v/100]};
+  const poly=vals=>PK.map((k,i)=>pt(i,vals[k]).join(',')).join(' ');
+  let g=`<defs><radialGradient id="rf"><stop offset="0" stop-color="#dec9a1" stop-opacity=".35"/><stop offset="1" stop-color="#9bd6b8" stop-opacity=".18"/></radialGradient>
+    <filter id="gl"><feGaussianBlur stdDeviation="3"/></filter></defs>`;
+  [33,66,100].forEach(l=>{g+=`<polygon points="${PK.map((k,i)=>pt(i,l).join(',')).join(' ')}" fill="none" stroke="rgba(119,166,245,.14)"/>`});
+  PK.forEach((k,i)=>{const [x,y]=pt(i,100);g+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="rgba(119,166,245,.1)"/>`;
+    const [lx,ly]=pt(i,125);g+=`<text x="${lx}" y="${ly+5}" text-anchor="middle" font-size="15" fill="#b4c3de" font-family="system-ui,sans-serif">${P[k].n}</text>`});
+  if(b) g+=`<polygon points="${poly(b)}" fill="none" stroke="#a7bcc4" stroke-width="1.2" stroke-dasharray="3 4" opacity=".7"/>`;
+  g+=`<polygon points="${poly(a)}" fill="none" stroke="#9bd6b8" stroke-width="5" opacity=".35" filter="url(#gl)"/>`;
+  g+=`<polygon points="${poly(a)}" fill="url(#rf)" stroke="#9bd6b8" stroke-width="1.6"/>`;
+  PK.forEach((k,i)=>{const [x,y]=pt(i,a[k]);g+=`<circle cx="${x}" cy="${y}" r="3" fill="#dec9a1"/>`});
+  return `<svg viewBox="0 0 ${size} ${size+8}" width="100%" style="max-width:${size}px;display:block;margin:0 auto">${g}</svg>`;
+}
+
+/* ========== 畫面切換 ========== */
+let current=null;
+function go(screen){S.screen=screen;render(true)}
+function render(scroll){
+  const s=S.screen;
+  if(s!=='pillars')applyCompanionTheme();
+  $('#nav').hidden=!['today','plan','card'].includes(s);
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===s));
+  if(s!=='quiz'||current!=='quiz'){({intro,quiz,scan,reveal,duration,card,plan,today,pillars})[s]()}
+  else quiz();
+  current=s; save();
+  if(scroll) window.scrollTo(0,0);
+}
+
+/* ---------- 入門 ---------- */
+function intro(){
+  app.innerHTML=`<div class="intro fade">
+    <div class="seal">滅</div>
+    <span class="tag">九 柱 修 練 錄</span>
+    <h1>九柱同行，<br>今天也一起變強。</h1>
+    <p>讓九柱輪流陪你修練，或選定最喜歡的一位。依照你的生活與身體狀況，每天換一點新內容，照自己的步調累積力量。</p>
+    ${companionBanner(1,true)}
+    <input class="name" id="nm" maxlength="12" placeholder="留下你的隊士名字" value="${esc(S.name)}">
+    <button class="btn" id="go">開 始 入 隊 評 估</button>
+    <p style="font-size:12px;color:var(--dim);text-align:center">九柱同人主題原型 · 日常任務與寄語為原創設計</p>
+  </div>`;
+  $('#go').onclick=()=>{S.name=($('#nm').value.trim()||'新入隊士');S.qi=0;go('quiz')};
+}
+
+/* ---------- 六階段評估（只換題目區，不整頁重繪） ---------- */
+function quiz(){
+  if(!$('#quizShell')){
+    app.innerHTML=`<div id="quizShell" class="fade">
+      <div class="qtop"><button class="back" id="bk">‹</button><span class="xpchip" id="xpc"></span></div>
+      <div class="stages" id="stg">${STAGES.map(n=>`<div><i></i>${n}</div>`).join('')}</div>
+      <div id="qa"></div>
+    </div>`;
+    $('#bk').onclick=()=>{if(S.qi===0){go('intro')}else{S.qi--;swapQ()}};
+    fillQ();
+  }else swapQ();
+}
+function swapQ(){
+  const qa=$('#qa'); qa.classList.add('out');
+  setTimeout(()=>{fillQ();qa.classList.remove('out');save()},180);
+}
+function updateTop(){
+  const q=Q[S.qi];
+  $('#xpc').textContent=`修練值 ${S.xp}`;
+  [...$('#stg').children].forEach((d,i)=>{d.className=i<q.s?'done':i===q.s?'on':''});
+}
+function fillQ(){
+  const q=Q[S.qi], v=S.a[q.id];
+  updateTop();
+  let body='';
+  if(q.type==='slider'){
+    const cur=v??q.def; S.a[q.id]=cur;
+    body=`<div class="slider"><div class="val" id="sv">${cur}</div><div class="vl" id="svl">${q.vl(cur)}</div>
+      <input type="range" id="sr" min="${q.min}" max="${q.max}" value="${cur}">
+      <div class="rlab"><span>${q.lo}</span><span>${q.hi}</span></div></div>`;
+  }else{
+    body=`<div class="opts">${q.o.map(([k,x,m],i)=>`<button class="opt" data-i="${i}"><span class="xn">${x}</span><span class="mn">${m}</span></button>`).join('')}</div>`;
+  }
+  const needBtn=q.type==='multi'||q.type==='slider';
+  $('#qa').innerHTML=`<h2 class="qtitle">${q.q}</h2><div class="qhint">${q.hint||''}</div>${body}
+    ${needBtn?`<div class="foot"><button class="btn" id="nx">繼 續</button></div>`:''}`;
+  if(q.type==='slider'){
+    $('#sr').oninput=e=>{const n=+e.target.value;S.a[q.id]=n;$('#sv').textContent=n;$('#svl').textContent=q.vl(n)};
+  }else{
+    markOpts();
+    document.querySelectorAll('#qa .opt').forEach(b=>b.onclick=()=>pick(q.o[+b.dataset.i][0]));
+  }
+  if(needBtn) $('#nx').onclick=next;
+}
+function markOpts(){
+  const q=Q[S.qi], v=S.a[q.id];
+  const sel=q.type==='multi'?(v||[]):(v===undefined?[]:[v]);
+  document.querySelectorAll('#qa .opt').forEach(b=>{
+    const k=q.o[+b.dataset.i][0], on=sel.includes(k);
+    b.classList.toggle('sel',on);
+    b.classList.toggle('dis',q.type==='multi'&&!on&&sel.length>=q.max&&k!==q.none);
+  });
+  if(q.type==='multi') $('#nx').disabled=!(sel.length);
+}
+function pick(k){
+  const q=Q[S.qi];
+  if(q.type==='multi'){
+    let arr=S.a[q.id]||[];
+    if(k===q.none) arr=arr.includes(k)?[]:[k];
+    else{arr=arr.filter(x=>x!==q.none);arr=arr.includes(k)?arr.filter(x=>x!==k):(arr.length<q.max?[...arr,k]:arr)}
+    S.a[q.id]=arr; markOpts(); save();
+  }else{
+    S.a[q.id]=k; markOpts(); setTimeout(next,260);
+  }
+}
+let advancing=false;
+function next(){
+  if(advancing) return; advancing=true; setTimeout(()=>advancing=false,400);
+  const cur=Q[S.qi], nq=Q[S.qi+1];
+  if(!nq){S.xp+=50;go('scan');return}
+  S.qi++;
+  if(nq.s!==cur.s) stageClear(STAGES[cur.s]); else swapQ();
+}
+function stageClear(name){
+  S.xp+=20; save(); updateTop();
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="ovbox card"><span class="tag">評 估 完 成</span>
+    <div class="bigxp">+20</div><p class="wk" style="font-size:16px">「${name}」評估完成<br>修練值 ${S.xp}</p>
+    <div class="foot"><button class="btn">繼 續</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('.btn').onclick=()=>{ov.remove();swapQ()};
+}
+
+/* ---------- 能力掃描 ---------- */
+function scan(){
+  app.innerHTML=`<div class="scan fade"><div class="stone"></div><h2>育手正在安排修練</h2><div class="scanlog" id="lg"></div></div>`;
+  const lines=['整裝，準備踏上修練之路……','了解你的日常根基……','參考同行柱的修練偏好……','記下需要加強的地方……','依照身體狀況安排修練……'];
+  let i=0;const t=setInterval(()=>{if(S.screen!=='scan'){clearInterval(t);return}
+    if(i<lines.length){$('#lg').textContent=lines[i++]}else{clearInterval(t);S.plan=buildPlan();go('reveal')}},560);
+}
+
+/* ---------- 能力公開 ---------- */
+function reveal(){
+  const p=S.plan||(S.plan=buildPlan()), c=ctx(), r=realmOf(S.xp);
+  const blockTxt={time:'時間不足',moti:'啟動困難',guide:'缺少方向',quit:'容易中斷'}[c.block]||'—';
+  app.innerHTML=`<div class="fade">
+    <span class="tag">隊 士 檔 案</span>
+    <h2 style="margin:14px 0 4px">${esc(S.name)}，你的修練之路開始了。<br>目前階級：${r.name}。</h2>
+    <p>這是你的六項日常能力。陪伴的柱可以自己選，修練量仍依你的回答安排；角色風格不會取代身體限制與休息。</p>
+    <div class="roots">
+      <div class="card"><div class="k">今 日 同 行</div><div class="v" style="color:var(--gold)">${companionFor().title}</div><div class="s">${P[p.strongest].n}優勢 · ${p.sc[p.strongest]}</div></div>
+      <div class="card"><div class="k">待 提 升</div><div class="v" style="color:var(--red)">${P[p.weakest].n}</div><div class="s">${P[p.weakest].m}待提升 · ${p.sc[p.weakest]}</div></div>
+    </div>
+    <div class="card sec">${radar(p.sc)}
+      <p class="wk" style="text-align:center;font-size:16px;color:var(--text)">修練適性：<span style="color:var(--qing)">${p.aptitude}</span></p></div>
+    <div class="card sec heard">
+      <h3>育手筆記</h3>
+      <div><span>目標屬性</span><span>${c.focus.map(k=>P[k].n+'（'+P[k].m+'）').join('、')||'—'}</span></div>
+      <div><span>修練難處</span><span>${blockTxt}</span></div>
+      <div><span>七日把握</span><span>${c.conf} 成 → 每日 ${p.habits.length} 項任務</span></div>
+      <div><span>育手帶法</span><span>${['溫和修練','穩步修練','積極修練'][c.push]}</span></div>
+    </div>
+    <div class="quote">「下一步的力量，從今天的一點堅持開始。」</div>
+    <div class="foot"><button class="btn" id="go">選 擇 挑 戰 週 期</button></div>
+  </div>`;
+  $('#go').onclick=()=>go('duration');
+}
+
+/* ---------- 選擇修練天數 ---------- */
+function duration(){
+  const c=ctx(), rec=c.conf<=4?14:c.conf<=7?30:60;
+  let sel=S.dur||rec;
+  app.innerHTML=`<div class="fade">
+    <span class="tag">修 練 週 期</span>
+    <h2 style="margin:14px 0 4px">選好時日，<br>開始你的第一輪修練。</h2>
+    <p>不用一開始就走很遠。先選一段做得到的修練期，結束後還能整裝，再次出發。</p>
+    <div class="durs">${DURS.map(([d,t,x])=>`<button class="dur" data-d="${d}">
+      <div class="d">${d}<small>日</small></div><div><div class="t">${t}</div><div class="x">${x}</div></div>${d===rec?'<span class="rec">育手建議</span>':''}</button>`).join('')}</div>
+    <div class="exitdate"><p style="font-size:13px">修練回顧日</p><div class="date" id="ed"></div></div>
+    <div class="foot"><button class="btn" id="go">確 認 挑 戰</button></div>
+  </div>`;
+  const mark=()=>{document.querySelectorAll('.dur').forEach(b=>b.classList.toggle('sel',+b.dataset.d===sel));$('#ed').textContent=dateAfter(sel-1)};
+  document.querySelectorAll('.dur').forEach(b=>b.onclick=()=>{sel=+b.dataset.d;mark()});
+  mark();
+  $('#go').onclick=()=>{S.dur=sel;S.day=1;S.log={};S.schedule={};S.sideLog={};S.companions={};S.runSeed=(S.runSeed||0)+1;go('plan')};
+}
+
+
+
+/* Nine Hashira fan companions. Motifs are original SVG; messages are written for this prototype. */
+const HASHIRA=[
+ {id:'giyu',title:'水柱',name:'冨岡義勇',breath:'水之呼吸',mark:'水',color:'#9fcfee',deep:'#17334a',gold:'#c7dceb',trait:'沉著・穩定',focus:'把眼前的一件事，安靜做好。',message:'不必急著證明什麼。今天能向前一步，就已經很好。',style:'穩定累積、步行與日常補給',prefer:['walk','slowwalk','water','meditate','focus','lights','one','review','listen'],motif:'water'},
+ {id:'shinobu',title:'蟲柱',name:'胡蝶忍',breath:'蟲之呼吸',mark:'蝶',color:'#d2b7f1',deep:'#33273e',gold:'#d9e5c1',trait:'細膩・輕巧',focus:'觀察自己的狀態，再做一點調整。',message:'先留意今天的感受吧。輕輕做一點，也是一種進步。',style:'輕量活動、心緒觀察與休息',prefer:['stretch','mobility','journal','breath','quiet','shutdown','mealplan','thanks','review','clear'],motif:'butterfly'},
+ {id:'rengoku',title:'炎柱',name:'煉獄杏壽郎',breath:'炎之呼吸',mark:'炎',color:'#ffc383',deep:'#482b22',gold:'#ffe3a6',trait:'熱情・鼓舞',focus:'帶著熱情，踏出今天的第一步。',message:'把今天做得到的那一件事完成吧！每一份努力都值得肯定。',style:'啟動行動、體能鍛鍊與鼓勵同伴',prefer:['walk','squat','pushup','march','tinygoal','one','protein','thanks','reach','focus'],motif:'flame'},
+ {id:'tengen',title:'音柱',name:'宇髄天元',breath:'音之呼吸',mark:'音',color:'#c5dbed',deep:'#2e2b42',gold:'#f4becf',trait:'華麗・節奏',focus:'換個節奏，讓日常多一點有趣。',message:'今天也來點不一樣的吧！找到自己的節奏，就能走得更久。',style:'活動節奏、探索與生活支線',prefer:['march','walk','focus','learn','invite','memory','prepare','slowmeal','read'],motif:'gem'},
+ {id:'mitsuri',title:'戀柱',name:'甘露寺蜜璃',breath:'戀之呼吸',mark:'戀',color:'#efb5ca',deep:'#422e3b',gold:'#c5df9f',trait:'溫柔・肯定',focus:'照顧自己，也把溫柔傳給重要的人。',message:'今天願意照顧自己，真的很棒！也別忘了給喜歡的人一點心意。',style:'柔軟活動、均衡補給與人際連結',prefer:['stretch','slowwalk','thanks','reach','listenmore','memory','veg','slowmeal','grat','journal'],motif:'heart'},
+ {id:'muichiro',title:'霞柱',name:'時透無一郎',breath:'霞之呼吸',mark:'霞',color:'#a9ddd6',deep:'#213739',gold:'#d3e6de',trait:'澄明・專注',focus:'先讓思緒安靜，只做眼前這一項。',message:'先不用想得太遠。把注意力放回現在，做好這一小步。',style:'專注練習、減少干擾與靜心',prefer:['meditate','breath','focus','screen','nobl','phone','quiet','one','clear','read'],motif:'mist'},
+ {id:'obanai',title:'蛇柱',name:'伊黑小芭內',breath:'蛇之呼吸',mark:'蛇',color:'#d3cbea',deep:'#2a2936',gold:'#e6e1cb',trait:'細心・自律',focus:'不用一次很多，讓每一步都確實。',message:'把步驟縮小，然後仔細做好。今天的細節，也會成為你的根基。',style:'規律作息、細節整理與目標確認',prefer:['prepare','lights','shutdown','one','review','mealplan','sugar','focus','mobility'],motif:'snake'},
+ {id:'sanemi',title:'風柱',name:'不死川實彌',breath:'風之呼吸',mark:'風',color:'#c1ddb1',deep:'#29392c',gold:'#e9e3d4',trait:'果敢・直率',focus:'別等完美時機，先做一小步。',message:'先動起來，做一點就算。照自己的能力來，不需要硬撐。',style:'短時啟動、戶外步行與行動力',prefer:['walk','slowwalk','squat','pushup','march','tinygoal','one','clear','sugar','reach'],motif:'wind'},
+ {id:'gyomei',title:'岩柱',name:'悲鳴嶼行冥',breath:'岩之呼吸',mark:'岩',color:'#d3c49d',deep:'#343829',gold:'#dce4c5',trait:'安定・耐心',focus:'先穩住根基，慢慢累積力量。',message:'願你今天能好好吃飯、好好休息。安穩的日常，也有很大的力量。',style:'根基鍛鍊、靜心與睡眠補給',prefer:['slowwalk','stretch','meditate','breath','water','protein','lights','quiet','listen','review'],motif:'beads'}
+];
+function companionFor(day=S.day||1){if(!S.companions)S.companions={};if(S.companionMode==='fixed')return HASHIRA.find(h=>h.id===S.favorite)||HASHIRA[1];const cached=HASHIRA.find(h=>h.id===S.companions[day]);if(cached)return cached;const h=S.companionMode==='fixed'?(HASHIRA.find(h=>h.id===S.favorite)||HASHIRA[1]):HASHIRA[(day-1)%9];S.companions[day]=h.id;return h}
+function companionPreference(){return S.companionMode==='fixed'?(HASHIRA.find(h=>h.id===S.favorite)||HASHIRA[1]):null}
+function pillarMotif(h){const art={
+ water:'<path d="M3 12q6-9 13 0t13 0 14 0M3 23q6-9 13 0t13 0 14 0M3 34q6-9 13 0t13 0 14 0"/>',
+ butterfly:'<path d="M24 20C5-3 1 11 8 25c4 7 11 7 16-2C13 33 12 46 21 40l3-9 3 9c9 6 8-7-3-17 5 9 12 9 16 2C47 11 43-3 24 20ZM24 18v17m0-17-5-7m5 7 5-7"/>',
+ flame:'<path d="M25 3c4 11-2 14 2 20 3-2 5-6 5-10 9 9 12 25 1 30-12 7-29-2-25-16 1-4 5-9 7-11-1 9 3 12 6 9-4-7 1-15 4-22Z"/><path d="M22 41c-6-7 4-11 3-17 10 10 7 15 3 19"/>',
+ gem:'<path d="m4 18 9-11h22l9 11-20 26Zm0 0h40M13 7l4 11 7-11 7 11 4-11M17 18l7 26 7-26"/><path d="M3 35v7m-3-3h6M41 2v8m-4-4h8"/>',
+ heart:'<path d="M24 41C13 33 3 26 5 16 7 4 20 6 24 14 28 6 41 4 43 16c2 10-8 17-19 25Z"/><path d="M14 15q5-4 8 1M28 32l6-6"/>',
+ mist:'<path d="M4 13h29q12 0 7 7-2 3-9 1M9 23h16M3 32h29q12 0 7 7M15 5h14M15 41h13"/>',
+ snake:'<path d="M34 8c-15-10-28 10-10 15 21 6 11 22-1 18-10-3-4-11 3-8 6 2 0 7-2 3M31 9c-8-3-16 5-5 9 27 9 12 32-6 28C1 42 11 22 24 28"/><path d="m35 10 6-3-3 6ZM42 10l5 2m-2-3v6"/>',
+ wind:'<path d="M3 17h26c12 0 11-14 3-12-5 1-4 7 0 7M3 25h34c12 0 11 14 3 12-5-1-4-7 0-7M6 34h13c10 0 9 12 2 10M8 9h8"/>',
+ beads:'<path d="M14 7c-18 14-7 32 10 33 17-1 28-19 10-33M21 40l-3 6m9-6 3 6"/>'+[[14,7],[8,14],[7,23],[12,32],[20,37],[28,37],[36,32],[41,23],[40,14],[34,7]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="3" fill="var(--pillar-deep)"/>`).join('')
+ };return `<svg class="pillar-emblem" viewBox="-2 -2 52 52" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${art[h.motif]}</svg>`}
+function applyCompanionTheme(h=companionFor()){const root=document.documentElement;root.style.setProperty('--qing',h.color);root.style.setProperty('--gold',h.gold);root.style.setProperty('--pillar-deep',h.deep);root.dataset.pillar=h.id}
+function pillarStyle(h){return `--pillar-color:${h.color};--pillar-deep:${h.deep};--pillar-gold:${h.gold}`}
+function companionBanner(day=S.day||1,compact=false){const h=companionFor(day);return `<section class="companion-banner ${compact?'compact':''}" data-companion="${h.id}" style="${pillarStyle(h)}"><div class="companion-pattern" aria-hidden="true"></div><div class="companion-art">${pillarMotif(h)}<span>${h.mark}</span></div><div class="companion-copy"><small>${S.companionMode==='fixed'?'指定陪伴':'九柱輪值'} · ${day%7===0?'蝶屋休養日':'今日同行'}</small><h2>${h.title}<span>${h.name}</span></h2><p>${h.trait} · ${h.breath}</p></div><button class="companion-change" data-open-pillars>換柱 ›</button>${compact?'':`<div class="companion-message"><p>${day%7===0?'今天以休息與輕量日常為主。無論哪一位柱當值，都不加重修練。':h.message}</p><small>依角色特色創作的修練寄語，非原作台詞</small></div>`}</section>`}
+let pillarReturn='intro',draftMode='rotation',draftFavorite='shinobu';
+function openPillars(){pillarReturn=S.screen==='pillars'?'intro':S.screen;draftMode=S.companionMode||'rotation';draftFavorite=S.favorite||companionFor().id;go('pillars')}
+function setCompanionMode(mode,favorite){S.companionMode=mode;S.favorite=favorite;for(const day of new Set([...Object.keys(S.schedule||{}),...Object.keys(S.companions||{})])){if(!(S.log[day]||[]).length&&!S.sideLog?.[day]){delete S.schedule?.[day];delete S.companions?.[day]}}save()}
+function pillars(){const chosen=HASHIRA.find(h=>h.id===draftFavorite)||HASHIRA[1];applyCompanionTheme(chosen);app.innerHTML=`<div class="fade pillar-selection"><div class="qtop"><button class="back" id="pillar-back" aria-label="返回">‹</button><span class="tag">九 柱 集 結</span></div><h1>今天，<br>想和誰一起修練？</h1><p>九種個性，九種陪伴。可以每天換一位，也可以一直和喜歡的柱同行。</p><div class="pillar-mode"><button data-pillar-mode="rotation" class="${draftMode==='rotation'?'on':''}">九柱輪值<small>每天一位，九天一輪</small></button><button data-pillar-mode="fixed" class="${draftMode==='fixed'?'on':''}">指定陪伴<small>一直陪你走下去</small></button></div><div class="pillar-roster">${HASHIRA.map(h=>`<button class="pillar-card ${draftFavorite===h.id?'selected':''}" style="${pillarStyle(h)}" data-pillar-choice="${h.id}" aria-pressed="${draftFavorite===h.id}">${pillarMotif(h)}<strong>${h.title}</strong><span>${h.name}</span><small>${h.trait}</small></button>`).join('')}</div><div class="pillar-description" style="${pillarStyle(chosen)}"><strong>${chosen.title} · ${chosen.name}</strong><p>${chosen.focus}</p><small>修練偏好：${chosen.style}</small></div><p class="plan-caption">${draftMode==='rotation'?'輪值順序為水、蟲、炎、音、戀、霞、蛇、風、岩。點選卡片可改為指定該柱陪伴。':'點選上方卡片，選擇你的修練搭檔。'}外觀確認後立即更換；已開始的任務與修練值保留，新任務偏好套用到尚未開始的日子。</p><button class="btn" id="pillar-confirm">${draftMode==='rotation'?'開 啟 九 柱 輪 值':'與 '+chosen.title+' 一 起 修 練'}</button></div>`;$('#pillar-back').onclick=()=>go(pillarReturn);$('#pillar-confirm').onclick=()=>{setCompanionMode(draftMode,draftFavorite);go(pillarReturn)};document.querySelectorAll('[data-pillar-choice]').forEach(b=>b.onclick=()=>{draftFavorite=b.dataset.pillarChoice;draftMode='fixed';pillars()});document.querySelectorAll('[data-pillar-mode]').forEach(b=>b.onclick=()=>{draftMode=b.dataset.pillarMode;pillars()})}
+
+/* Daily assignments are saved once; redraws and reloads never reshuffle them. */
+const THEMES=[['整裝日','穿好羽織，從一項小小鍛鍊開始。'],['凝神日','靜下心來，今天換一種方式鍛鍊集中力。'],['見聞日','鎹鴉帶來新見聞，今天試一件不一樣的事。'],['紮根日','根基靠日常累積，穩穩做好眼前的一項。'],['精進日','朝自己的心願前進一小步，不必硬撐。'],['同行日','和重要的人說說話，也為生活留一點溫柔。'],['蝶屋休養日','今天在蝶屋好好休息，只安排輕量的日常練習。']];
+const SIDEQUESTS=[
+ ['整理小憩之所','整理桌面的一小角，讓視線有個乾淨的落點。'],
+ ['鎹鴉的觀察','留意身邊一個平常忽略的小細節，拍照或記下來。'],
+ ['下一段旅程','找一個下次想去的地方，把名字存起來。'],
+ ['留住好風景','挑一張喜歡的照片，寫下一句當時的心情。'],
+ ['整頓行囊','整理一個小抽屜或包包口袋，只做兩分鐘就好。'],
+ ['今日新見聞','找一個你一直好奇的小問題，查一下答案。']
+];
+function hashSeed(text){let n=2166136261;for(const c of String(text))n=Math.imul(n^c.charCodeAt(0),16777619);return n>>>0}
+function taskPool(pillar,day){const c=ctx();let pool=H.filter(h=>h.p===pillar&&h.ok(c));if(day%7===0){const light=pool.filter(h=>h.light||['stretch','meditate','grat','phone','nobl','lights','water','veg','sugar','reach','listen','one'].includes(h.id));if(light.length)pool=light;}return pool}
+function dailyTasks(day){
+ if(!S.schedule)S.schedule={};
+ if(S.schedule[day])return S.schedule[day].map(id=>H.find(h=>h.id===id)).filter(Boolean);
+ // A pre-existing day keeps its original task identities and completion history.
+ if((S.log[day]||[]).length){S.schedule[day]=S.plan.habits.slice();return dailyTasks(day)}
+ const previous=day>1?dailyTasks(day-1):[];
+ const tasks=S.plan.pillars.map(pillar=>{const guide=companionFor(day),pool=taskPool(pillar,day),last=previous.find(h=>h.p===pillar),candidates=pool.filter(h=>h.id!==last?.id),available=candidates.length?candidates:pool,preferred=available.filter(h=>guide.prefer.includes(h.id)),usable=day%3!==0&&preferred.length?preferred:available;const seed=hashSeed(S.name+':'+(S.runSeed||0)+':'+pillar+':'+guide.id);return usable[(seed+day-1)%usable.length]});
+ S.schedule[day]=tasks.map(h=>h.id);return tasks;
+}
+function swapDailyTask(pillar){const hs=dailyTasks(S.day),current=hs.find(h=>h.p===pillar);if(!current||(S.log[S.day]||[]).includes(current.id))return;const pool=taskPool(pillar,S.day),index=pool.findIndex(h=>h.id===current.id),next=pool[(index+1)%pool.length];S.schedule[S.day]=hs.map(h=>h.p===pillar?next.id:h.id);save();const y=scrollY;render(false);scrollTo(0,y)}
+function sideQuest(day){if(day%3!==0)return null;const i=(hashSeed(S.name+':'+(S.runSeed||0))+Math.floor(day/3)-1)%SIDEQUESTS.length;return SIDEQUESTS[i]}
+function toggleSideQuest(){if(!sideQuest(S.day))return;if(!S.sideLog)S.sideLog={};const before=realmOf(S.xp).i,done=Boolean(S.sideLog[S.day]);S.sideLog[S.day]=!done;S.xp=Math.max(0,S.xp+(done?-15:15));save();const y=scrollY;render(false);scrollTo(0,y);if(!done){floatXP('+15 修練值');if(realmOf(S.xp).i>before)setTimeout(()=>tribulation(realmOf(S.xp).name),600)}}
+function weekPreview(){const start=(Math.ceil(S.day/7)-1)*7+1,end=Math.min(S.dur,start+6);return `<div class="week-preview">${Array.from({length:end-start+1},(_,i)=>{const day=start+i,theme=THEMES[(day-1)%7];return `<div class="preview-day ${day===S.day?'active':''}"><div class="preview-heading"><strong>第 ${day} 日</strong><span>${companionFor(day).title} · ${theme[0]}</span></div><p>${dailyTasks(day).map(h=>h.f).join(' · ')}</p>${sideQuest(day)?'<small>＋ 鎹鴉委託</small>':''}</div>`}).join('')}</div>`}
+
+/* ---------- 訓練任務圖譜 ---------- */
+function weekCols(D){
+  const W=Math.ceil(D/7);
+  if(W<=5) return Array.from({length:W},(_,i)=>i+1);
+  return [...new Set([1,2,Math.round(W*.4),Math.round(W*.7),W])].sort((a,b)=>a-b);
+}
+function plan(){
+  const p=S.plan, c=ctx(), D=S.dur;
+  const hs=p.habits.map(id=>H.find(h=>h.id===id));
+  const cols=weekCols(D);
+  const d1={
+    time:['今日','先做一項修練，做兩分鐘也能開始。先建立啟動的習慣。','01'],
+    moti:['今夜','今晚把手機放到臥室外，開始你的入夜歸息任務。','02'],
+    guide:['明日','上午 10 點前活動一次：適合時做 10 下深蹲，或快走 5 分鐘。','03'],
+    quit:['今日','點亮修練紀錄的第一格。中斷也沒關係，回來繼續就好。','04'],
+  };
+  const items=[d1[c.block]||d1.guide,['今夜','把明天第一個任務寫在便條上，放在容易看到的地方。','05'],['本週','幫任務找一個開始的時機：刷牙後、回家後，就開始執行。','06']];
+  app.innerHTML=`<div class="fade">
+    ${companionBanner(S.day,true)}<span class="tag">修 練 手 帖</span>
+    <h2 style="margin:14px 0 4px">${D} 日修練已安排。<br>每天，磨礪不同的自己。</h2>
+    <p>依六維能力配置 ${hs.length} 項任務，包含優先提升的「${P[p.weakest].n}」。訓練任務會參考你填寫的限制；請依身體狀況調整，不適時停止。修練回顧日：<span style="color:var(--gold)">${dateAfter(D-1-(S.day-1))}</span></p>
+    <div class="sec"><h3>育手的叮嚀</h3><div class="d1">
+      ${items.map(([w,t,i])=>`<div class="card"><div class="ic">${i}</div><div><div class="when">${w}</div><div style="font-size:14px;line-height:1.7">${t}</div></div></div>`).join('')}
+    </div></div>
+    <div class="sec"><h3>本週修練手帖</h3><p class="plan-caption">不同任務輪流出現，第 7 天改為輕量恢復；每 3 天解鎖一個鎹鴉委託。已修畢的任務會保留。</p>${weekPreview()}</div><details class="card sec"><summary>鍛鍊份量參考 · 逐週調整</summary><p class="plan-caption">以下是各屬性的代表項目，實際每天會輪替不同任務。</p>
+      <table><tr><th>任務</th>${cols.map(w=>`<th>第${w}週</th>`).join('')}</tr>
+      ${hs.map(h=>`<tr><td><span class="gf">${h.f}</span><span class="pl">${h.n} · ${P[h.p].n}</span></td>${cols.map((w,i)=>{
+        const t=target(h,w,p.push);
+        const txt=t===null?'每日':(h.u==='毫升'?(t/1000).toFixed(1)+'L':(h.down?'≤'+t:t));
+        return `<td class="${i===0?'hi':''}">${txt}</td>`}).join('')}</tr>`).join('')}
+      </table>
+      <p style="font-size:12px;margin-top:10px">單位：${[...new Set(hs.filter(h=>!h.fixed).map(h=>h.f+'＝'+(h.u==='毫升'?'公升':h.u)))].join('，')||'—'}</p>
+      ${cols.length===1?'<p style="font-size:12px">7 日挑戰先維持任務量，建立穩定節奏。</p>':''}
+    </details>
+    <div class="quote">「把每一件小事，做成向前的力量。」</div>
+    <p style="font-size:12.5px;text-align:center">這不是競速挑戰。任務量會逐週調整，累的時候也可以放慢。<br>能力預估僅為遊戲化示意，真實改變需要時間。</p>
+    <div class="foot"><button class="btn" id="go">${S.started?'回 到 今 日 任 務':'接 受 今 日 任 務'}</button></div>
+  </div>`;
+  $('#go').onclick=()=>{S.started=true;go('today')};
+}
+
+/* ---------- 今日修練 ---------- */
+function today(){
+  const p=S.plan, D=S.dur, week=Math.ceil(S.day/7);
+  const hs=dailyTasks(S.day);
+  const theme=THEMES[(S.day-1)%7],side=sideQuest(S.day);
+  const done=S.log[S.day]||[];
+  const r=realmOf(S.xp);
+  const pct=r.nx?((S.xp-r.cur[0])/(r.nx[0]-r.cur[0]))*100:100;
+  let streak=0;for(let d=S.day-(done.length===hs.length?0:1);d>=1;d--){if((S.log[d]||[]).length===hs.length)streak++;else break}
+  const colsN=D<=14?7:10;
+  app.innerHTML=`<div class="fade">
+    <div class="dayhead"><div><div class="rank">${esc(S.name)} · 第 ${week} 週</div><div class="n">修練第 ${S.day} 天<small> / ${D}</small></div></div>
+      <div style="text-align:right"><div class="rank" style="font-size:12px">連續修練</div><div class="wk" style="font-size:28px;font-weight:700;color:var(--gold)">${streak} 日</div></div></div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><span class="wk" style="font-size:22px;font-weight:700;letter-spacing:.1em">${r.full}</span><span class="wk" style="font-size:14px;color:var(--gold)">修練值 ${S.xp}</span></div>
+      <div class="xpbar"><i style="width:${pct}%"></i></div>
+      <div class="xpmeta"><span>${r.nx?`距「${r.nx[1]}」尚差 ${r.nx[0]-S.xp} 修練值`:'已達本原型最高階級'}</span><span>每項 +10 · 全修 +30</span></div>
+    </div>
+    ${companionBanner()}
+    <div class="daily-theme sec"><span class="tag">第 ${S.day} 日 · ${theme[0]}</span><p>${theme[1]}</p></div><div class="sec"><h3>今日修練 ${done.length} / ${hs.length}</h3><div class="tasks">
+      ${hs.map(h=>{const on=done.includes(h.id);return `<div class="task ${on?'done':''}" data-id="${h.id}"><button class="task-main" data-complete="${h.id}" aria-pressed="${on}"><span class="chk">✓</span><span class="task-copy"><span class="gf">${h.f}</span><span class="tn">${amount(h,week,p.push,S.day)}</span><span class="task-attribute">${P[h.p].n} · +10 修練值</span></span></button>${on?'<span class="task-finished">已修畢</span>':`<button class="task-swap" data-swap="${h.p}" aria-label="替換${h.f}">換一項 ↻</button>`}</div>`}).join('')}
+    </div></div>
+    ${side?`<div class="card sec side-quest"><div class="preview-heading"><span class="tag">鎹鴉委託</span><span>+15 修練值</span></div><h2>${side[0]}</h2><p>${side[1]}</p><button class="btn ghost" id="side-complete">${S.sideLog?.[S.day]?'已修畢 · 取消記錄':'回 報 委 託 完 成'}</button><small>不影響每日修練全修與連續天數。</small></div>`:''}
+    <details class="card sec"><summary>翻閱本週修練手帖</summary>${weekPreview()}</details>
+    <div class="card sec"><h3>修練紀錄</h3>
+      <div class="dots" style="grid-template-columns:repeat(${colsN},1fr)">${Array.from({length:D},(_,i)=>{const d=i+1,n=(S.log[d]||[]).length;
+        return `<i class="${n===hs.length?'f':n>0?'p':''} ${d===S.day?'c':''}" title="第${d}日"></i>`}).join('')}</div>
+      <div class="row2"><button class="btn ghost" id="prev" ${S.day<=1?'disabled':''}>‹ 前一日</button><button class="btn ghost" id="nxt" ${S.day>=D?'disabled':''}>下一日 ›</button></div>
+      <p style="font-size:12px;text-align:center;margin-top:8px">原型示範：切到下一日，看看不同的任務。</p>
+    </div>
+    <div class="quote">「${quote()}」</div>
+  </div>`;
+  document.querySelectorAll('[data-complete]').forEach(t=>t.onclick=()=>toggleTask(t.dataset.complete,hs));
+  document.querySelectorAll('[data-swap]').forEach(t=>t.onclick=()=>swapDailyTask(t.dataset.swap));
+  if($('#side-complete'))$('#side-complete').onclick=toggleSideQuest;
+  $('#prev').onclick=()=>{S.day--;render(true)};
+  $('#nxt').onclick=()=>{S.day++;render(true)};
+}
+function toggleTask(id,hs){
+  let arr=S.log[S.day]||[];
+  const before=realmOf(S.xp).name;
+  if(arr.includes(id)){if(arr.length===hs.length)S.xp-=30;arr=arr.filter(x=>x!==id);S.xp-=10}
+  else{arr=[...arr,id];let gain=10;S.xp+=10;if(arr.length===hs.length){S.xp+=30;gain+=30}floatXP('+'+gain+' 修練值')}
+  S.xp=Math.max(0,S.xp); S.log[S.day]=arr;
+  const after=realmOf(S.xp).name;
+  const y=window.scrollY; render(false); window.scrollTo(0,y);
+  if(REALMS.findIndex(x=>x[1]===after)>REALMS.findIndex(x=>x[1]===before)) setTimeout(()=>tribulation(after),600);
+  else if(S.day===S.dur&&arr.length===hs.length) setTimeout(exitRetreat,700);
+}
+function floatXP(t){const f=document.createElement('div');f.className='float';f.textContent=t;document.body.appendChild(f);setTimeout(()=>f.remove(),1100)}
+function tribulation(n){
+  const fl=document.createElement('div');fl.className='flash';document.body.appendChild(fl);setTimeout(()=>fl.remove(),950);
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="ovbox card">
+    <svg class="bolt" viewBox="0 0 40 70"><path d="M24 2 L6 38 H19 L13 68 L34 28 H21 Z" fill="#e8fbff" stroke="#9bd6b8" stroke-width="1.5"/></svg>
+    <span class="tag" style="margin-top:10px">階 級 晉 升</span><div class="bigxp" style="font-size:46px">${n}</div>
+    <p>你的修練被看見了。一次又一次的堅持，讓階級向前邁進。收好這份鼓勵，下一段路也慢慢走。</p>
+    <div class="foot"><button class="btn">繼 續 挑 戰</button></div></div>`;
+  document.body.appendChild(ov); ov.querySelector('.btn').onclick=()=>{ov.remove();if(S.day===S.dur&&(S.log[S.day]||[]).length===dailyTasks(S.day).length)exitRetreat()};
+}
+function exitRetreat(){
+  const full=Object.values(S.log).filter(a=>a.length===S.plan.habits.length).length;
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="ovbox card"><span class="tag">修 練 告 一 段 落</span>
+    <div class="bigxp" style="font-size:40px">修練回顧</div>
+    <p>${S.dur} 日修練結束，其中 ${full} 天完成全部任務。<br>隊士階級：${realmOf(S.xp).full}</p>
+    <div class="foot"><button class="btn" id="again">開 啟 下 輪 挑 戰</button><button class="btn ghost" id="stay" style="margin-top:10px">先留在這裡</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#stay').onclick=()=>ov.remove();
+  ov.querySelector('#again').onclick=()=>{ov.remove();S.started=false;go('duration')};
+}
+
+/* ---------- 隊士檔案（角色卡） ---------- */
+function card(){
+  const p=S.plan, r=realmOf(S.xp), D=S.dur;
+  const end=projected(p,D);
+  const show=S.viewEnd?end:p.sc;
+  app.innerHTML=`<div class="fade">
+    <div class="who"><div class="avatar">${esc(S.name.slice(0,1))}</div>
+      <div><div class="wk" style="font-size:22px;font-weight:700;letter-spacing:.08em">${esc(S.name)}</div><div class="rank">${r.full} · 修練值 ${S.xp}</div></div></div>
+    <div class="roots">
+      <div class="card"><div class="k">今 日 同 行</div><div class="v" style="color:var(--gold)">${companionFor().title}</div><div class="s">${P[p.strongest].n}優勢</div></div>
+      <div class="card"><div class="k">待 提 升</div><div class="v" style="color:var(--red)">${P[p.weakest].n}</div><div class="s">${P[p.weakest].m}</div></div>
+    </div>
+    <div class="card sec">
+      <div class="toggle"><button class="${!S.viewEnd?'on':''}" data-v="0">入隊之時</button><button class="${S.viewEnd?'on':''}" data-v="1">修練後（模擬）</button></div>
+      <div id="rd">${radar(show,S.viewEnd?p.sc:null)}</div>
+      <div class="bars">${PK.map(k=>`<div><b class="${S.viewEnd&&end[k]>p.sc[k]+8?'up':''}">${show[k]}</b>${P[k].n}</div>`).join('')}</div>
+      <p style="font-size:12px;margin-top:10px;text-align:center">${S.viewEnd?`虛線為入隊之時。${D} 日後的模擬數值以任務類型估算，不代表實際健康變化。`:'切換查看修練後的模擬能力值'}</p>
+    </div>
+    ${companionBanner(S.day,true)}<div class="card sec"><h3>鬼殺隊階級之路</h3>
+      ${REALMS.map(([x,n],i)=>`<div style="display:flex;justify-content:space-between;padding:9px 0;${i?'border-top:1px solid var(--edge);':''}font-family:system-ui,serif;font-size:16px;color:${S.xp>=x?(n===r.name?'var(--qing)':'var(--text)'):'var(--dim)'}"><span>${S.xp>=x?'◆':'◇'}　${n}</span><span style="font-size:13px">${x.toLocaleString()} 修練值</span></div>`).join('')}
+    </div>
+    <button class="reset" id="ch">更改修練天數</button>
+    <button class="reset" id="rs" style="margin-top:10px">重新入隊評估（清除 修練值 與紀錄）</button>
+  </div>`;
+  document.querySelectorAll('.toggle button').forEach(b=>b.onclick=()=>{S.viewEnd=b.dataset.v==='1';const y=window.scrollY;render(false);window.scrollTo(0,y)});
+  $('#ch').onclick=()=>go('duration');
+  $('#rs').onclick=confirmReset;
+}
+function confirmReset(){
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="ovbox card"><h2>確定重新入隊評估？</h2><p style="margin:10px 0 18px">這份原型的回答、修練值 與修練紀錄都會清除。</p>
+    <button class="btn" id="y">重 新 建 立</button><button class="btn ghost" id="n" style="margin-top:10px">再想想</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#n').onclick=()=>ov.remove();
+  ov.querySelector('#y').onclick=()=>{ov.remove();S=fresh();try{localStorage.removeItem(KEY)}catch(e){};go('intro')};
+}
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+document.addEventListener('click',e=>{if(e.target.closest('[data-open-pillars]')){if($('#nm')){S.name=$('#nm').value.trim();save()}openPillars()}});
+
+/* ========== 數據光點 ========== */
+(function(){
+  const cv=$('#spirit'), cx=cv.getContext('2d');
+  const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let W,Hh,dots=[];
+  function size(){const d=Math.min(2,window.devicePixelRatio||1);W=innerWidth;Hh=innerHeight;cv.width=W*d;cv.height=Hh*d;cx.setTransform(d,0,0,d,0,0)}
+  function mk(y){return {x:Math.random()*W,y:y??Math.random()*Hh,r:Math.random()*1.8+.6,v:Math.random()*.25+.08,a:Math.random()*Math.PI*2,s:Math.random()*.6+.2,gold:Math.random()<.3}}
+  size(); addEventListener('resize',size);
+  dots=Array.from({length:46},()=>mk());
+  function frame(){
+    cx.clearRect(0,0,W,Hh);
+    for(const d of dots){
+      d.y-=d.v; d.a+=.01; const x=d.x+Math.sin(d.a)*14*d.s;
+      if(d.y<-10){Object.assign(d,mk(Hh+10))}
+      const al=.35+.35*Math.sin(d.a*2);
+      const g=cx.createRadialGradient(x,d.y,0,x,d.y,d.r*6);
+      const col=d.gold?'186,153,219':'106,181,155';
+      g.addColorStop(0,`rgba(${col},${al})`);g.addColorStop(1,`rgba(${col},0)`);
+      cx.fillStyle=g;cx.beginPath();cx.arc(x,d.y,d.r*6,0,Math.PI*2);cx.fill();
+    }
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  frame();
+})();
+
+/* ========== 啟動 ========== */
+if(S.screen==='scan'){S.screen='quiz';S.qi=Q.length-1}
+if(['plan','today','card','reveal','duration'].includes(S.screen)&&!S.plan){S.screen='intro'}
+if(['plan','today'].includes(S.screen)&&!S.dur){S.screen='duration'}
+render(true);
+</script>
+</body>
+</html>
