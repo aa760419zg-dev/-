@@ -465,7 +465,7 @@ nav a{font-size:var(--text-md)}
 .places-filter-popover button { padding:5px 7px; min-height:34px; font-size:var(--text-sm); }
 
 /* The illustrated atlas uses the same real boundaries as the precise street map. */
-:root{--atlas-land:#CBD6A4;--atlas-land-2:#D8DDB5;--atlas-land-3:#C0CE98;--atlas-land-4:#DEE2BC;--atlas-sea:#DDEDE7;--atlas-wave:#9BBFB1;--atlas-tree:#73975F;--atlas-mountain:#8CA66E;--atlas-mountain-light:#BBCB95;--atlas-building:#9ABCB3;--atlas-outline:#9E8C70;}
+:root{--atlas-land:#CBD6A4;--atlas-land-2:#D8DDB5;--atlas-land-3:#C0CE98;--atlas-land-4:#DEE2BC;--atlas-sea:#DDEDE7;--atlas-wave:#9BBFB1;--atlas-tree:#73975F;--atlas-outline:#9E8C70;}
 .places-atlas-page>.page-heading p { display:none; }
 .atlas-intro { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:0 0 8px; color:var(--primary); }
 .atlas-intro p { font-size:var(--text-lg); margin:0; font-weight:500; letter-spacing:1px; }
