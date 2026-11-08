@@ -548,3 +548,28 @@ nav a{font-size:var(--text-md)}
 
 .places-toolbar>.places-map-filter { position:relative; top:auto; right:auto; margin-left:auto; }
 .places-toolbar>.places-map-filter .places-filter-popover { position:absolute; right:0; top:calc(100% + 6px); margin-top:0; }
+
+/* County close-ups retain the atlas palette and interactive district boundaries. */
+.atlas-stage { min-width:0; width:100%; transform-origin:center; }
+.atlas-back { position:absolute; top:4px; left:0; z-index:5; min-height:38px; padding:6px 10px; color:var(--primary); background:var(--surface); font-size:var(--text-sm); }
+.atlas-focus-title { font-family:inherit; font-size:var(--text-lg); font-weight:600; fill:var(--primary); text-anchor:middle; }
+.atlas-town { --atlas-town-base:var(--atlas-land); fill:var(--atlas-town-base); stroke:var(--atlas-outline); stroke-width:1; stroke-linejoin:round; cursor:pointer; }
+.atlas-town.atlas-land-1 { --atlas-town-base:var(--atlas-land-2); }
+.atlas-town.atlas-land-2 { --atlas-town-base:var(--atlas-land-3); }
+.atlas-town.atlas-land-3 { --atlas-town-base:var(--atlas-land-4); }
+.atlas-town:not(.atlas-unlocked) { fill-opacity:1; }
+.atlas-town.atlas-unlocked { fill:var(--accent); }
+.atlas-town.atlas-half { fill:var(--atlas-town-base); stroke:var(--accent-text); stroke-width:1.6; stroke-dasharray:4 3; }
+.atlas-town.atlas-wish { fill:var(--atlas-town-base); stroke:var(--offline); stroke-width:1.4; stroke-dasharray:3 4; }
+.atlas-town:hover,.atlas-town:focus-visible,.atlas-town.selected { stroke:var(--primary); stroke-width:2.5; outline:none; }
+.atlas-town-label,.atlas-selected-label { font-family:inherit; font-size:var(--text-lg); fill:var(--primary); text-anchor:middle; dominant-baseline:middle; pointer-events:none; paint-order:stroke; stroke:var(--surface); stroke-width:3; stroke-linejoin:round; }
+.atlas-selected-label { font-weight:600; }
+.atlas-county.atlas-progress-tier-1,.atlas-inset-land .atlas-progress-tier-1 { fill:color-mix(in srgb,var(--accent) 25%,var(--atlas-land)); }
+.atlas-county.atlas-progress-tier-2,.atlas-inset-land .atlas-progress-tier-2 { fill:color-mix(in srgb,var(--accent) 45%,var(--atlas-land)); }
+.atlas-county.atlas-progress-tier-3,.atlas-inset-land .atlas-progress-tier-3 { fill:color-mix(in srgb,var(--accent) 65%,var(--atlas-land)); }
+.atlas-county.atlas-progress-tier-4,.atlas-inset-land .atlas-progress-tier-4 { fill:color-mix(in srgb,var(--accent) 85%,var(--atlas-land)); }
+.atlas-legend { flex-wrap:wrap; column-gap:16px; row-gap:6px; }
+.atlas-count-legend { color:var(--muted); font-size:var(--text-sm); }
+.atlas-transition { animation:atlas-zoom .24s ease-out both; }
+@keyframes atlas-zoom { from { opacity:.4; transform:scale(.94); } to { opacity:1; transform:scale(1); } }
+@media(prefers-reduced-motion:reduce) { .atlas-transition { animation:none; } .atlas-county { transition:none; } }

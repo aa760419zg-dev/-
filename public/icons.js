@@ -26,6 +26,7 @@ const artwork={
  recurring:`<path d="M4.2 9a8.1 8.1 0 0 1 13.4-3l2.3 2.2M20 3.5v4.8h-4.8M19.8 15a8.1 8.1 0 0 1-13.4 3l-2.3-2.2M4 20.5v-4.8h4.8"/>`,
  add:`<path d="M12 4.5v15M4.5 12h15"/>`,
  info:`<circle cx="12" cy="12" r="8.5"/><path d="M12 10.5v6m0-9.5v.2"/>`,
+ filter:`<path d="M3.5 4.5h17l-6.3 7.4V19l-4.4 2v-9.1L3.5 4.5Z"/>`,
  back:`<path d="m10.5 5-7 7 7 7M4 12h16"/>`,
  next:`<path d="m13.5 5 7 7-7 7M20 12H4"/>`,
  close:`<path d="m6 6 12 12M18 6 6 18"/>`,
