@@ -9,7 +9,7 @@ export function createMobileUI({document:doc=globalThis.document,getPage,getHome
  const info=doc.createElement('dialog');info.id='info-sheet';info.innerHTML=`<div class="dialog-head"><h2>使用說明</h2><button type="button" data-sheet-close aria-label="關閉">${icon('close')}</button></div><p class="info-content"></p>`;doc.body.append(info);
  let status=false,touch=null;
  const mobile=()=>win.innerWidth<760;
- function close(dialog){if(isBusy())return;dialog.close();}
+ function close(dialog){if(isBusy()||dialog.dataset.dismissPolicy==='explicit')return;dialog.close();}
  function setSync(state){status=state;const offline=state==='offline'||win.navigator.onLine===false,dot=top.querySelector('.sync-dot'),label=top.querySelector('.sync-status');label.hidden=!offline;dot.classList.toggle('synced',state===true||state==='synced');label.setAttribute('aria-label',offline?'離線中':'');}
 
  // Reuse existing artwork without adding a second illustration to an empty state.
