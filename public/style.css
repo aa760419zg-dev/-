@@ -583,3 +583,15 @@ nav a{font-size:var(--text-md)}
 .atlas-legend .atlas-legend-tier-1 { background:var(--atlas-unlock-1); }.atlas-legend .atlas-legend-tier-2 { background:var(--atlas-unlock-2); }.atlas-legend .atlas-legend-tier-3 { background:var(--atlas-unlock-3); }.atlas-legend .atlas-legend-tier-4 { background:var(--atlas-unlock-4); }
 .atlas-legend .atlas-legend-half { border:2px dashed var(--accent-text); }
 .atlas-legend i[class*="atlas-legend-tier-"] { border-radius:3px; }
+
+.place-search-label { display:block; font-size:var(--text-sm); color:var(--primary); font-weight:600; margin:10px 0 6px; }
+.place-search-line { display:flex; gap:8px; align-items:center; }
+.place-search-line input { flex:1; min-width:0; margin:0; }
+.place-search-line button { flex:none; min-height:44px; }
+.place-location-help { background:var(--accent-soft); padding:12px; border-radius:10px; margin:12px 0; }
+.place-location-help[hidden] { display:none; }
+.place-location-help p { font-size:var(--text-sm); margin:0 0 8px; color:var(--text); }
+.place-location-help button { font-size:var(--text-sm); margin:3px 4px 0 0; }
+
+.places-other-methods { margin:10px 0 16px; }
+.places-other-methods summary { cursor:pointer; color:var(--primary); font-size:var(--text-sm); min-height:36px; padding:8px 0; }
