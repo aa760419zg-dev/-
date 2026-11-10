@@ -1,3 +1,4 @@
+import {isTaiwan} from './place-geometry.js';
 import {expenseLines} from './ledger-model.js';
 import {visibleActivity} from './activity.js';
 const dayMs=86400000;
@@ -36,5 +37,5 @@ export function householdActivity(entries,data,userId,now=new Date()){
  else if(e.collection==='members')text='更新了自己的成員資料';
  else if(e.collection==='settings')text='更新了家庭設定';
  else text=e.summary||`${e.action}${e.area}`;
- result.push({id:e.id,userId:member.userId,name:displayMember.name,color:displayMember.color,time:activityTime(e.at,now),text});if(e.collection==='placeVisits'&&e.after&&e.action!=='還原')for(const [index,region]of (e.unlockedRegions||[]).entries()){if(result.length>=5)break;result.push({id:e.id+':unlock:'+index,sourceId:e.id,userId:member.userId,name:'',color:member.color,time:activityTime(e.at,now),text:'🎉 解鎖新區域：'+region.city+region.district,system:true});}if(result.length>=5)break;}return result;
+ result.push({id:e.id,userId:member.userId,name:displayMember.name,color:displayMember.color,time:activityTime(e.at,now),text});if(e.collection==='placeVisits'&&e.after&&e.action!=='還原')for(const [index,region]of (e.unlockedRegions||[]).entries()){if(result.length>=5)break;result.push({id:e.id+':unlock:'+index,sourceId:e.id,userId:member.userId,name:'',color:member.color,time:activityTime(e.at,now),text:'🎉 解鎖新區域：'+(isTaiwan(region.country)||!region.country?'':region.country+'・')+region.city+region.district,system:true});}if(result.length>=5)break;}return result;
 }
