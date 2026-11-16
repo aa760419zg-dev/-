@@ -679,3 +679,54 @@ nav a{font-size:var(--text-md)}
  .world-atlas-svg { animation:world-atlas-arrive .22s ease-out; }
  @keyframes world-atlas-arrive { from { opacity:.7; transform:scale(.985); } to { opacity:1; transform:scale(1); } }
 }
+
+.personal-spending-entry { display:inline-flex; align-items:center; gap:6px; text-decoration:none; white-space:nowrap; font-size:var(--text-md); }
+.personal-spending-entry svg { width:19px; height:19px; }
+#personal-spending { min-width:0; }
+.personal-spending-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:12px 0; font-size:var(--text-sm); }
+.personal-spending-nav a { color:var(--primary); text-decoration:none; }
+.personal-spending-nav .subtle { padding:9px 12px; }
+.personal-spending-members,.personal-spending-presets { display:flex; flex-wrap:wrap; gap:7px; margin:12px 0; }
+.personal-spending-members button,.personal-spending-presets button { display:inline-flex; align-items:center; gap:7px; border-radius:22px; padding:9px 13px; white-space:nowrap; font-size:var(--text-md); }
+#personal-period-form:not([hidden]) { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:10px; align-items:end; max-width:700px; }
+#personal-period-form .field { min-width:0; margin:0; }
+#personal-period-form input { width:100%; min-width:0; }
+#personal-period-form .personal-period-error { grid-column:1/-1; color:var(--danger); font-size:var(--text-sm); margin:0; }
+.personal-spending-filters { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto; align-items:end; gap:10px; margin-top:12px; }
+.personal-spending-filters .field { min-width:0; margin:0; }
+.personal-spending-filters input,.personal-spending-filters select { width:100%; min-width:0; }
+.personal-spending-filters button { min-height:44px; font-size:var(--text-md); }
+.personal-spending-summary { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr); gap:12px; padding:20px; border-radius:16px; background:var(--surface); margin-top:18px; }
+.personal-spending-summary>div { display:flex; flex-direction:column; gap:6px; min-width:0; }
+.personal-spending-summary strong { font-size:var(--text-size-28); color:var(--primary); overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
+.personal-spending-summary span { font-size:var(--text-sm); color:var(--muted); }
+.personal-spending-period { margin:10px 0 20px; overflow-wrap:anywhere; }
+.personal-spending-columns { display:grid; grid-template-columns:minmax(200px,.7fr) minmax(0,1.5fr); gap:24px; align-items:start; }
+.personal-spending-columns>section { min-width:0; }
+.personal-spending-columns h2 { font-size:var(--text-lg); margin:0 0 12px; }
+.personal-spending-date { font-size:var(--text-sm); color:var(--muted); font-weight:500; margin:18px 0 5px; }
+.personal-expense { border-bottom:1px solid var(--line-strong); min-width:0; }
+.personal-expense-main { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 0; width:100%; border:0; border-radius:0; background:var(--transparent); color:var(--text); text-align:left; }
+.personal-expense-main>span:first-child { min-width:0; flex:1; }
+.personal-expense-main strong { display:block; font-size:var(--text-md); overflow-wrap:anywhere; font-weight:500; }
+.personal-expense-main small { display:block; font-size:var(--text-sm); color:var(--muted); margin-top:5px; overflow-wrap:anywhere; }
+.personal-expense-amount { flex-shrink:0; text-align:right; font-variant-numeric:tabular-nums; }
+.personal-expense-amount b { font-size:var(--text-md); }
+.personal-expense-splits { margin:0 0 12px; padding:10px; background:var(--surface); }
+.personal-expense-splits summary { font-size:var(--text-sm); }
+.personal-spending-categories .chart-row,.personal-expense-splits .chart-row { gap:10px; font-size:var(--text-sm); }
+.personal-spending-categories .chart-row span,.personal-expense-splits .chart-row span { overflow-wrap:anywhere; min-width:0; }
+.personal-spending-categories .chart-row b,.personal-expense-splits .chart-row b { white-space:nowrap; }
+.reimbursement-personal-hint { margin-top:6px; }
+@media(max-width:759px) {
+ .personal-spending-columns { grid-template-columns:minmax(0,1fr); gap:22px; }
+ .personal-spending-filters { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+ .personal-spending-filters .field:first-child { grid-column:1/-1; }
+ #personal-period-form:not([hidden]) { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+ #personal-period-form button { grid-column:1/-1; min-height:42px; }
+ .personal-spending-summary { padding:16px; }
+ .personal-spending-members button,.personal-spending-presets button { padding:8px 12px; }
+ .personal-expense-main { gap:8px; }
+ .personal-expense-amount { max-width:46%; overflow-wrap:anywhere; }
+}
+.personal-spending-members .primary .member-color { box-shadow:0 0 0 1px var(--on-primary); }
