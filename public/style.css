@@ -730,3 +730,15 @@ nav a{font-size:var(--text-md)}
  .personal-expense-amount { max-width:46%; overflow-wrap:anywhere; }
 }
 .personal-spending-members .primary .member-color { box-shadow:0 0 0 1px var(--on-primary); }
+
+.pet-dose-actions { display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:6px; }
+.pet-dose-actions button { font-size:var(--text-md); white-space:nowrap; }
+.pet-dose-time-fields { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:12px; }
+.pet-dose-time-fields .field { min-width:0; }
+.pet-dose-time-fields input { width:100%; min-width:0; font-size:var(--text-input); }
+#pet-dose-form [role=alert] { color:var(--danger); font-size:var(--text-sm); }
+@media(max-width:759px) {
+ .pet-dose { flex-wrap:wrap; }
+ .pet-dose .pet-dose-actions { width:100%; }
+ .pet-dose-time-fields { grid-template-columns:minmax(0,1fr); gap:4px; }
+}

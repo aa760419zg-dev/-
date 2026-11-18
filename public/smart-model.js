@@ -28,6 +28,7 @@ export function householdActivity(entries,data,userId,now=new Date()){
  if(e.collection==='places'&&adding)text='新增了願望清單：'+r.name;
  else if(e.collection==='placeVisits'&&adding){const participants=(data.members||[]).filter(m=>r.participants?.includes(m.userId));displayMember={...member,name:participants.map(m=>m.name).join('和')||member.name,color:participants[0]?.color||member.color};text='去了 '+(data.places?.find(p=>p.id===r.placeId)?.name||'一個地方');}
  else if(e.collection==='settlements'){const recipient=data.members?.find(m=>m.userId===r.memberUserId)?.name||'成員';text=!e.after?'取消補給'+recipient+'的補款 NT$'+Number(r.amount).toLocaleString('zh-TW'):'幫'+recipient+'補款 NT$'+Number(r.amount).toLocaleString('zh-TW')+'（'+r.recordIds.length+' 筆）';}
+ else if(e.collection==='petDoses'&&e.action==='編輯')text=`調整了${pet}的餵藥時間`;
  else if(e.collection==='petDoses'&&done)text=`幫${pet}餵了藥`;
  else if(e.collection==='chores'&&done)text=`${r.title}完成了`;
  else if(e.collection==='money'&&adding)text=`記了一筆${r.note||r.title||r.subcategory||r.category} NT$${Number(r.amount).toLocaleString('zh-TW')}`;

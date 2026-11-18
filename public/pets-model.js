@@ -1,3 +1,4 @@
+import {taipeiDate,taipeiTime} from './dates.js';
 import {assertSettledEdit} from './reimbursements.js';
 import {petMedicalCategory,recordAccount} from './ledger-model.js';
 export const petCollections=['petProfiles','petWeights','petMedications','petDoses','petVisits','petPreventives'];
@@ -30,6 +31,21 @@ export function recordDose(data,slotId,date,actor){
  if(!slot)throw Error('這次用藥不在今日排程內，請重新確認');
  if(slot.done)throw Error('已由 '+(data.members?.find(m=>m.userId===slot.done.userId)?.name||'未知成員')+' 標記餵藥');
  data.petDoses.push({id:slot.id,petId:slot.plan.petId,planId:slot.plan.id,date,index:slot.index,slotName:slot.name,drug:slot.plan.drug,dose:slot.plan.dose,by:actor.name,userId:actor.id,at:actor.at});
+}
+// Actual administration time is independent of the scheduled slot's date/id.
+export function doseTimestamp(date,time,now=new Date()){
+ if(typeof date!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(date)||typeof time!=='string'||!/^([01]\d|2[0-3]):[0-5]\d$/.test(time))throw Error('請填寫有效的餵藥日期與時間');
+ const actual=new Date(date+'T'+time+':00+08:00');
+ if(!Number.isFinite(actual.getTime())||taipeiDate(actual)!==date||taipeiTime(actual)!==time)throw Error('請填寫有效的餵藥日期與時間');
+ if(actual.getTime()>new Date(now).getTime())throw Error('餵藥時間不能晚於現在');
+ return actual.toISOString();
+}
+export function updateDoseTime(data,id,{date,time,expectedAt},now=new Date()){
+ const dose=data.petDoses.find(d=>d.id===id);if(!dose)throw Error('這筆餵藥紀錄已被刪除，請重新確認');
+ if(dose.at!==expectedAt)throw Error('這筆餵藥時間已被其他成員修改，請重新開啟');
+ const at=doseTimestamp(date,time,now);
+ if(Number.isFinite(new Date(dose.at).getTime())&&taipeiDate(dose.at)===date&&taipeiTime(dose.at)===time)return dose;
+ dose.at=at;return dose;
 }
 export function saveVisit(data,visit,{needsReimbursement}={}){
  const index=data.petVisits.findIndex(x=>x.id===visit.id);

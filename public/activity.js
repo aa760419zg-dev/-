@@ -50,7 +50,7 @@ export function appendActivity(data,before,{id,at,userId,action,summary,restoreO
  const rootId=id+':'+root.collection+':'+root.id;
  const unlocked=changes.some(c=>c.collection==='placeVisits'&&c.after)?newlyUnlocked(before,data):[];
  const logs=changes.map(c=>{
-  let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='petDoses'?'完成':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
+  let verb=action||(!c.before?'新增':!c.after?'刪除':c.collection==='chores'&&!equal(c.before?.history,c.after?.history)?'完成':'編輯');
   if(c.collection==='petDoses'&&!c.before&&!action)verb='完成';
   const entry={id:id+':'+c.collection+':'+c.id,at,userId,name:member.name,action:verb,area:areaFor(c),recordId:c.id,summary:summary||`${verb}${areaFor(c)}：${describe(c.after?data:before,c.collection,c.after||c.before)}`,before:clone(c.before),after:clone(c.after),collection:c.collection,beforeIndex:c.beforeIndex,groupId:id,rootId};
   if(c.collection==='placeVisits'&&unlocked.length)entry.unlockedRegions=unlocked.map(r=>({country:r.country,city:r.city,district:r.district}));
